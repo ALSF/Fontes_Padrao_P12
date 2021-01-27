@@ -1,0 +1,468 @@
+/*******************************************************************************************************************************
+* CNTXPIMS.PRX
+* Arquivo fonte contendo as validações para integração entre a gestão de contratos do Protheus (SIGAGCT) e o PIMS
+*******************************************************************************************************************************/
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "CNTXPIMS.CH"
+#INCLUDE "GCTXDEF.CH"
+#INCLUDE "FWMVCDEF.CH"
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsVlCt()
+Função responsável por validar a estrutura do contrato para se adequar ao PIMS
+Estrutura esperada: Contrato com somente 1 fornecedor
+  					Contrato com somente 1 planilha do tipo flexivel
+
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsVlCt(oModel)
+Local aArea		:= GetArea()
+Local aSaveLine	:= FWSaveRows()
+Local lRet		:= .T.
+
+Default oModel	:= FwModelActive()
+
+lRet := CnPimsCauc(oModel) .And. CnPimsForn(oModel) .And. CnPimsPlan(oModel) .And. CnPimsMuBo(oModel)
+
+FWRestRows( aSaveLine )
+RestArea(aArea)
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsForn()
+Função responsável por validar se o tipo o contrato possui somente um fornecedor
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsForn(oModel)
+Local oModelCNC	:= Nil
+Local lRet 		:= .T.
+
+Default oModel 	:= FwModelActive()
+
+If oModel != Nil
+	oModelCNC := oModel:GetModel('CNCDETAIL')
+	If oModelCNC:Length(.T.) > 1
+		lRet := .F.
+		Help('',1,'CNPIMSFORN') //- Contrato possui mais de um fornecedor.|Para contratos com integração com o PIMS é obrigatório a utilização de somente um fornecedor.
+	EndIf
+Else
+	lRet := .F.
+EndIf
+
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsPlan()
+Função responsável por validar se o contrato possui somente uma planilha e esta unica planilha é do tipo flexivel
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsPlan(oModel)
+Local oModelCNA	:= Nil
+Local lRet		:= .T.
+Local nLinha	:= 1
+
+Default oModel 	:= FwModelActive()
+
+If oModel != Nil
+	oModelCNA := oModel:GetModel('CNADETAIL')
+	oModelCNA:GoLine(1)
+	While nLinha <= oModelCNA:Length() .And. oModelCNA:IsDeleted()
+		oModelCNA:GoLine(nLinha)
+		nLinha++
+	End
+
+	If !oModelCNA:IsDeleted()
+		DO	CASE
+			CASE !Cn300RetSt('FIXO') .And. !Cn300RetSt('SEMIFIXO')
+				lRet := .F.
+				Help('',1,'CNPIMSTPLFX') //- Tipo de planilha invalido.|Para contratos com integração com o PIMS é obrigatório a utilização de planilhas do tipo fixo ou semifixo.
+			CASE !Cn300RetSt('MEDEVE')
+				lRet := .F.
+				Help('',1,'CNPIMSTPLAN') //- Tipo de planilha invalido.|Para contratos com integração com o PIMS é obrigatório a utilização de planilhas de medição eventual.
+		END DO
+	EndIf
+Else
+	lRet := .F.
+EndIf
+
+Return lRet
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsMuBo()
+Função responsável por validar se o contrato possui multas e bonificações
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsMuBo(oModel)
+Local oModelCNH	:= Nil
+Local lRet		:= .T.
+Local nLinha	:= 1
+
+Default oModel 	:= FwModelActive()
+
+If oModel != Nil
+	oModelCNH := oModel:GetModel('CNHDETAIL')
+	If oModelCNH:Length(.T.) > 1
+		lRet := .F.
+		Help('',1,'CNPIMSMULBO') //- Contrato possui multas ou bonificações.|Para contratos com integração com o PIMS não é permitido a utilização de multas ou bonificações.
+	Else
+		oModelCNH:GoLine(1)
+		While nLinha <= oModelCNH:Length() .And. oModelCNH:IsDeleted()
+			oModelCNH:GoLine(nLinha)
+			nLinha++
+		EndDo
+
+		If !oModelCNH:IsDeleted() .And. !Empty(oModelCNH:GetValue('CNH_CODIGO'))
+			lRet := .F.
+			Help('',1,'CNPIMSMULBO') //- Contrato possui multas ou bonificações.|Para contratos com integração com o PIMS não é permitido a utilização de multas ou bonificações.
+		EndIf
+	EndIf
+Else
+	lRet := .F.
+EndIf
+
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsCauc()
+Função responsável por validar se o tipo o contrato possui somente um fornecedor
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsCauc(oModel)
+Local oModelCN9 := Nil
+Local lRet 		:= .T.
+
+Default oModel 	:= FwModelActive()
+
+If oModel != Nil
+	oModelCN9 := oModel:GetModel('CN9MASTER')
+	If oModelCN9:GetValue('CN9_FLGCAU') == '1'
+		lRet := .F.
+		Help('',1,'CNPIMSCAUC') //- Contrato possui caução.|Para contratos com integração com o PIMS não é permitido a utilização caução.
+	EndIf
+Else
+	lRet := .F.
+EndIf
+
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsTpCt()
+Função responsável por validar a ativação do campo CN1_INTEGR  para que o tipo de contrato seja valido para o PIMS
+Estrutura esperada: Contrato deve ser do tipo de compra. 	(CN1_ESPCTR = 1)
+					Contrato deve ser de medição eventual. 	(CN1_MEDEVE = 1)
+
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsTpCt(oModel)
+Local oModelCN1 := Nil
+Local lRet 		:= .T.
+
+Default oModel 	:= FwModelActive()
+
+If oModel != Nil
+	oModelCN1 := oModel:GetModel('CN1MASTER')
+	If oModelCN1 != Nil  .And. CN1->(Columnpos('CN1_INTEGR')) > 0 .And. oModelCN1:GetValue('CN1_INTEGR')
+		DO	CASE
+			CASE oModelCN1:GetValue('CN1_ESPCTR') != '1'
+				 lRet := .F.
+				 Help('',1,'CNPIMSTPCO') //- Espécie de contrato inválida.|Para selecionar a integração com o PIMS, a espécie do contrato deve ser obrigatóriamente compra.
+			CASE oModelCN1:GetValue('CN1_MEDEVE') != '1'
+				 lRet := .F.
+				 Help('',1,'CNPIMSTPME') //- Tipo de medição inválido.|Para selecionar a integração com o PIMS, o tipo de medição deve ser obrigatóriamente eventual.
+			CASE oModelCN1:GetValue('CN1_CTRFIX') == '2'
+				 lRet := .F.
+				 Help('',1,'CNPIMSTPFX') //- Tipo de contrato inválido.|Para selecionar a integração com o PIMS, o contrato deve obrigatóriamente ser do tipo fixo ou semifixo.
+		END DO
+	EndIf
+EndIf
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsTpSt()
+Função responsável por retornar situação da integração com PIMS
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsTpSt(cCtrNum,cCtrRev,cCtrFil)
+Local aArea		:= GetArea()
+Local aSaveLine	:= FWSaveRows()
+Local cRet		:= 'X500'		//- Falha Contrato não encontrado
+
+Default cCtrNum := ''
+Default cCtrRev := ''
+Default cCtrFil := xFilial('CN9')
+
+dbSelectArea('CN9')
+CN9->(dbSetOrder(1))
+If CN9->(dbSeek(cCtrFil+cCtrNum+cCtrRev))
+	cRet := Left(CN9->CN9_PIMSST,2)
+EndIf
+
+FWRestRows( aSaveLine )
+RestArea(aArea)
+Return cRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsChgS()
+Função responsável por alterar a situação de contratos com integração com PIMS
+@author		Israel.Escorizza
+@since		16/02/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsChgS(oModel,lCommited)
+Local aArea		:= GetArea()
+Local aSaveLine	:= FWSaveRows()
+
+Local lIntPims	:= SuperGetMV('MV_CNXPIMS',.F.,.F.)
+Local lRet		:= .T.
+Local cErrorMsg := ""
+Local cErrorTit := ""
+
+Default oModel	 	:= Nil
+Default lCommited	:= .F.
+
+DO	CASE
+	CASE oModel != Nil
+		If lCommited .And. lIntPims .And. CnCtrxPims()
+			RecLock('CN9')
+			CN9->CN9_PIMSST := 'P201'
+			CN9->CN9_PIMSER := ''
+			CN9->(MsUnlock())
+		ElseIf oModel:GetErrorMessage()[5] == 'FWSENDEAI'
+			cErrorTit := AllTrim(oModel:GetErrorMessage()[5])
+			cErrorMsg := AllTrim(oModel:GetErrorMessage()[6]) + "|" + AllTrim(oModel:GetErrorMessage()[7])
+
+			RecLock('CN9')
+			CN9->CN9_PIMSST := 'P401'	//- Erro de comunicação
+			CN9->(MsUnlock())
+
+			MSMM(CN9->CN9_PIMSER,,,cErrorTit+"|"+cErrorMsg,1,,,"CN9","CN9_PIMSER")
+
+			Help(" ",1,cErrorTit,,char(10) + AllTrim(oModel:GetErrorMessage()[6]) + "|" + char(10) + char(10) + AllTrim(oModel:GetErrorMessage()[7]),4,1)
+		EndIf
+		lRet := .T.
+
+	OTHERWISE
+		lRet := .F.
+END DO
+
+FWRestRows( aSaveLine )
+RestArea(aArea)
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsShwE()
+Função responsável por exibir mensagem de falha de integração do contrato posicionado.
+@author		Israel.Escorizza
+@since		08/03/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsShwE()
+Local aArea		:= GetArea()
+Local aSaveLine	:= FWSaveRows()
+Local aErrorMsg := {}
+Local cErrorTit := ""
+Local cErrorMsg := ""
+
+Local lCtrError	:= CN300RetSt('INTPIMS',,,,,.F.) .And. CnPimsTpSt(CN9->CN9_NUMERO,CN9->CN9_REVISA,CN9->CN9_FILCTR) == 'P4'
+Local nX		:= 0
+
+If lCtrError
+	cErrorMsg := MSMM(CN9->CN9_PIMSER)
+	aErrorMsg := StrToKArr(cErrorMsg,'|')
+	cErrorTit := aErrorMsg[1]
+
+	cErrorMsg := ""
+	For nX := 2 To Len(aErrorMsg)
+		If nX > 2 .And. isUpper(aErrorMsg[nX])
+			cErrorMsg += char(10)+char(10)
+		EndIf
+		cErrorMsg += aErrorMsg[nX]
+	Next
+Else
+	cErrorTit := STR0001 //- "Atenção"
+	cErrorMsg := STR0002 //- "Não existem falhas de integração no contrato selecionado."
+EndIf
+Help(" ",1,cErrorTit,,cErrorMsg,4,1)
+
+FWRestRows( aSaveLine )
+RestArea(aArea)
+Return
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnPimsVlEx()
+Função responsável por Validar informaçoes de exclusao mediçao
+@author		Ronaldo.Robes
+@since		15/05/2018
+@version	P12.1.20
+/*/
+//==============================================================================================================================
+Function CnPimsVlEx(oXml, cMarca)
+
+Local cMed 		:= ""
+Local cQry		:= ""
+Local cXXFAlias	:= ""
+Local cChave	:= ""
+Local cEmpId	:= ""
+Local cFilId	:= ""
+Local cTabCND	:= ""
+
+Local aValuePiMs:= {}
+Local aFilPiMs  := {}
+Local aRet		:= {}
+
+Local nU		:= 0
+Local nW		:= 0
+Local nTamFil 	:= TamSX3("CND_FILIAL")[1]
+Local nTamCtr 	:= TamSX3("CND_CONTRA")[1]
+Local nTamRev 	:= TamSX3("CND_REVISA")[1]
+Local nTamMed 	:= TamSX3("CND_NUMMED")[1]
+
+cTabCND := RetSqlName("CND")
+cEmpId	:= oXml:_BUSINESSCONTENT:_COMPANYID:TEXT
+cFilId	:= oXml:_BUSINESSCONTENT:_BRANCHID:TEXT
+cChave	:= oXml:_BUSINESSEVENT:_IDENTIFICATION:_KEY:TEXT
+
+cXXFAlias := GetNextAlias()
+BeginSql Alias cXXFAlias
+	SELECT
+		substring(XXF_INTVAL, 1, %Exp:nTamFil%) As FILIAL,
+		XXF_INTVAL As INTVAL
+
+	FROM
+		%table:XXF%
+
+	WHERE
+		%notdel%
+		AND XXF_REFER = %exp:cMarca%
+		AND XXF_TABLE = %exp:cTabCND%
+		AND XXF_ALIAS = 'CND'
+		AND XXF_FIELD = 'CND_NUMMED'
+		AND XXF_EXTVAL	= %exp:cChave%
+
+	ORDER BY
+		FILIAL Desc, INTVAL
+EndSql
+
+If (cXXFAlias)->(!EOF())
+	cFil  :=  (cXXFAlias)->FILIAL
+	aAdd(aFilPiMs,{(cXXFAlias)->FILIAL,aValuePiMs})
+
+	While (cXXFAlias)->(!EOF())
+	    If (cXXFAlias)->FILIAL <> cFil
+		    aFilPiMs[Len(aFilPiMs)][2] := aValuePiMs
+		    aValuePiMs := {}
+		    aAdd(aFilPiMs,{(cXXFAlias)->FILIAL,aValuePiMs} )
+	    EndIf
+
+		aAdd(aValuePiMs,{(cXXFAlias)->INTVAL})
+
+		cFil  :=  (cXXFAlias)->FILIAL
+		(cXXFAlias)->(DbSkip())
+	EndDo
+EndIf
+(cXXFAlias)->(DbCloseArea())
+
+If !Empty(aFilPiMs)
+	aFilPiMs[Len(aFilPiMs)][2] := aValuePiMs
+    For nW := 1 to Len(aFilPiMs)
+	    cFilMed := aFilPiMs[nW][1]
+	    cMed	:= ""
+	    cContra	:= ""
+	    aValuePiMs:={}
+
+		For nU := 1 to Len(aFilPiMs[nw][2])
+			If !Empty(aFilPiMs[nW][2][nU][1])
+				cMed       +=  SUBSTRING(aFilPiMs[nw][2][nU][1],(nTamCtr+nTamFil+nTamRev+1),nTamMed)
+				cContra    +=  SUBSTRING(aFilPiMs[nw][2][nU][1],(nTamFil+1),nTamCtr)
+
+				If nU <> Len(aFilPiMs[nw][2])
+					cMed += ", "
+					cContra += " ,"
+				EndIf
+			EndIf
+		Next nU
+
+		cQry :=	" SELECT DISTINCT 	"
+		cQry += " 	C7_MEDICAO,		"
+		cQry += " 	C7_CONTRA,		"
+		cQry += " 	C7_REVISAO,		"
+		cQry += " 	1 AS C7_SE2SC7 	"
+
+		cQry += " FROM "
+		cQry += RetSqlName("SC7") + " SC7 "
+
+		cQry += " WHERE "
+		cQry += " 	SC7.D_E_L_E_T_ = ''  AND "
+		cQry += " 	SC7.C7_FILIAL = '"+xFilial('SC7',cFilMed)+"' AND "
+		cQry += " 	SC7.C7_MEDICAO in "+FormatIn( cMed, ',' )+" AND "
+		cQry += " 	SC7.C7_QUJE > 0  AND SC7.C7_CONTRA  in "+FormatIn( cContra, ',' )+" "
+
+		cQry += " UNION ALL"
+
+		cQry += " SELECT "
+		cQry += " 	E2_MEDNUME, "
+		cQry += " 	E2_MDCONTR, "
+		cQry += " 	E2_MDREVIS, "
+		cQry += " 	2 "
+
+		cQry += " FROM "
+		cQry += RetSqlName("SE2") + " SE2 "
+
+		cQry += " WHERE "
+		cQry += " 	SE2.D_E_L_E_T_ = '' AND "
+		cQry += " 	SE2.E2_MEDNUME in "+FormatIn(cMed, ',' )+" AND "
+		cQry += " 	SE2.E2_FILORIG 	= '"+cFilMed+"'  AND "
+		cQry += " 	SE2.E2_BAIXA	<> '' 	AND "
+		cQry += " 	SE2.E2_TIPO 	<> 'PR' AND "
+		cQry += " 	SE2.E2_MDCONTR in "+FormatIn( cContra, ',' )+" "
+
+		cQry := ChangeQuery(cQry)
+
+		If Select("TMPEX") > 0
+			TMPEX->(DbCloseArea())
+		EndIf
+
+		dbUseArea( .T., "TOPCONN", TcGenQry( ,, cQry ), "TMPEX", .F., .T. )
+
+		If !TMPEX->(Eof())
+			While !TMPEX->(Eof())
+				If TMPEX->C7_SE2SC7 == 1
+					Aadd(aRet,{.F.,cEmpId+"|"+cFilId+"|"+cChave+"|"+TMPEX->C7_CONTRA,STR0003}) 	//- "Possui nota fiscal"
+				Else
+					Aadd(aRet,{.F.,cEmpId+"|"+cFilId+"|"+cChave+"|"+TMPEX->C7_CONTRA,STR0004}) 	//- "Possui titulo com baixa"
+			EndIf
+				TMPEX->(DbSkip())
+			EndDo
+		EndIf
+	Next nW
+
+	If Empty(aRet)
+		aRet :=  CNi121ExcM( oXml, cMarca ,aFilPiMs)
+	EndIf
+Else
+	Aadd(aRet,{.F.,cEmpId+"|"+cFilId+"|"+cChave,STR0005}) //- "Não encontrado vinculo para registro informado"
+EndIf
+
+Return aRet

@@ -1,0 +1,2177 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "SIGAVLD.CH"
+/*                                    
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o    ³ SIGAVLD  ³ Autor ³ Microsiga         	  ³ Data ³ 09/02/93   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ 													              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³         	    			                                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ 	                                                              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso      ³                                                                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³         ATUALIZACOES SOFRIDAS DESDE A CONSTRU€AO INICIAL.                 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Programador ³ Data     ³  BOPS  ³  Motivo da Alteracao                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Bruno       ³17/06/2008³	145908 ³Ajustada rotina para que o campos         ³±±  
+±±³			   ³		  ³		   ³RE0_FUNASS,RE0_DESLIG,RE0_CODFUN e        ³±±
+±±³			   ³		  ³		   ³RE0_DESFUN  apresente as informacoes dos  ³±±
+±±³			   ³		  ³		   ³funcionarios nao importando de qual filial³±±
+±±³			   ³		  ³		   ³ele(s) sejam ou se estao demitidos ou nao.³±±
+±±³Leandro Dr  ³07/11/2008³	149365 ³Ajustada rotina para que os dados do parti³±±
+±±³			   ³		  ³		   ³cipante sejam atualizados preferencialment³±±
+±±³			   ³		  ³		   ³de acordo com o funcionario mensalista em ³±±
+±±³			   ³		  ³		   ³sobreposicao ao autonomo.                 ³±±
+±±³Leandro Dr  ³16/12/2008³	008689 ³Ajuste na funcao Sx3Box2Arr para montar   ³±±
+±±³			   ³		  ³		   ³combobox somente se o campo possuir ativa.³±±
+±±³Allyson M   ³08/08/2011³	018945/³Ajuste em EntUpdateRd0 p/ verificar se    ³±±
+±±³			   ³		  ³	  2011 ³for transferencia e o registro da RD0 ja  ³±±
+±±³			   ³		  ³	       ³existir, se atualiza ou cria novo item.	  ³±±
+±±³R.Berti     ³28/08/2012³TFNVB1  ³Ajuste em EntUpdateRd0 p/ gravar RD0_SENHA³±±
+±±³			   ³		  ³	       ³com RA_SENHA somente se RD0_SENHA vazia.  ³±±
+±±³Gustavo M.  ³20/02/2013³TGMKHS  ³Retirada do ajuste anterior, RDO x SRA.   ³±±
+±±³			   ³		  ³		   ³Para que a atualizacao nao seja feita, bas³±±
+±±³			   ³		  ³		   ³ta retirar o relacionamento do MSRELRDZ.  ³±±
+±±³Allyson M.  ³06/08/2013³THPJ68  ³Ajuste p/ em fUpdateEnt() p/ evitar a ge- ³±±
+±±³			   ³		  ³		   ³racao de registros incoerentes: filial en-³±±
+±±³			   ³		  ³		   ³tidade diferente da filial da chave		  ³±±
+±±³Nivia F.  ³25/09/13 ³M_RH001³Grava o campo RD0_PORTAL na inclusao de um    ³±±
+±±³			   ³		  ³001851 ³novo servidor no projeto MP						 ³±±
+±±³Allyson M.  ³28/10/2014³TQW359  ³Ajuste p/ atualizar o numero do endereco  ³±±
+±±³			   ³		  ³		   ³na tabela RD0 (SRA -> RD0)				  ³±±
+±±³Renan Borges³27/04/2015³TRHXHP  ³Ajuste p/ em fUpdateEnt() identificar     ³±±
+±±³			   ³		  ³		   ³registros ativos e inativos e atualizar	  ³±±
+±±³			   ³		  ³		   ³legenda.								  ³±±
+±±³Cícero Alves³05/08/2016³TVTFCP  ³Ajuste em fUpdateRel para não atualizar   ³±±
+±±³			   ³		  ³		   ³cadastro de funcionários demitidos 		  ³±±
+±±³Cícero Alves³19/08/2016³TVMWNH  ³Ajuste em EntUpdateRd0 para separar o cam-³±±
+±±³			   ³		  ³		   ³po endereço do nº no cadastro de participa³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o	 ³ FA010IRF ³ Autor ³ Wagner Xavier 	    ³ Data ³ 09/02/93 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Consiste percentual de IRRF, de acordo com a resposta 	  ³±±
+±±³			 ³ de calculo ou nao 										  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe	 ³ FA010IRF()												  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso		 ³ Generico 												  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function FA010IRF()
+LOCAL lRet:=.t.
+
+IF m->ed_calcirf != "S" .and. m->ed_percirf > 0
+	lRet:=.f.
+EndIF
+Return lRet
+
+/*/
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o	 ³FA010calIR³Autor  ³ Wagner Xavier 	  	³ Data ³ 29/05/92 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Verifica se natureza ira'calcular IRRF                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe	 ³ FA010CalIR()												  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso		 ³ FINA010													  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+Function FA010CalIRF()
+LOCAL nEndereco,nEnd1,nEnd2,lRetorna := .T.,nTam,nDec,cMascara
+
+If !m->ed_calcirf $ "SN"
+	lRetorna := .F.
+Else
+	nEndereco := Ascan(aGets,{ |x| Subs(x,9,10) = "ED_PERCIRF" } )
+	IF m->ed_calcirf = "N" .and. nEndereco>0
+		nEnd1 := Val(Subs(aGets[nEndereco],1,2))
+		nEnd2 := Val(Subs(aGets[nEndereco],3,1))*2
+		nTam	:= Len(aTela[nEnd1][nEnd2])
+		m->ed_percirf := 0
+		dbSelectArea("SX3")
+		dbSetOrder(2)
+		dbSeek("ED_PERCIRF")
+		dbSetOrder(1)
+		cMascara := Trim(X3_PICTURE)
+		dbSelectArea("SED")
+		aTela[nEnd1][nEnd2] := Transform(m->ed_percirf,cMascara)
+		lRefresh := .T.
+	EndIf
+EndIf
+Return lRetorna
+
+/*
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o	 ³RetPessoa | Autor ³ Eduardo Motta 		³ Data ³08/08/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Retorna o tipo da pessoa de acordo com o tamanho do cCgcCpf³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe	 ³ ExpL1 := RetPessoa(cCgcCpf)                             	  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ cCgcCpf - Codigo do CGC ou CPF                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso		 ³ Generico 												  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+*/
+Function RetPessoa(cCgcCpf)
+Local cRetPes := " "
+If Left(cCgcCPF,2) =='  '
+	Return ' '
+EndIf
+if Len(Trim(cCgcCpf)) >= 14
+	cRetPes := "J"
+else
+	cRetPes := "F"
+endif
+Return cRetPes
+
+/*
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡…o	 ³PicPes    | Autor ³ Eduardo Motta 		³ Data ³08/08/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Retorna a picture do CGC ou CPF                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe	 ³ ExpL1 := PicPes(cTipPes)                               	  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ cTipPes - F-Fisica/J-Juridica                              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso		 ³ Generico 												  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+*/ 
+Function PicPes(cTipPes)
+Local cPict := ""
+if cTipPes == "F"
+	cPict := "@R 999.999.999-99"
+else
+	cPict := "@R 99.999.999/9999-99"
+endif
+cPict := cPict + "%C"
+Return cPict
+
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡„o    ³ Tr030Depto	³ Autor ³ Cristina Ogura    ³ Data ³ 13.11.97 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡„o ³ Valida o campo QB_DEPTO da getdados                        ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Sintaxe   ³ Tr030Depto()                                            	  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso		 ³ Trma030  												  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß*/
+Function Tr030Depto()
+Local nPosDepto:=0, cVar:= &(ReadVar())
+Local nY
+
+nPosDepto := Ascan(aHeader,{ |x| x[2] = "QB_DEPTO"})
+
+For ny=1 To Len(aCols)
+	If cVar == aCols[ny][nPosDepto] .And.;
+			n # ny .And. !aCols[ny][Len(aCols[ny])]
+		Help("",1,"A060JAEXISTE")						// Este codigo de departamento ja existe
+		Return .F.											// para este grupo	
+		Exit
+	EndIf	
+Next ny
+Return .T.
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Fun‡„o	 ³VldCgcCpf ³ Autor ³ Alessandro B. Freire  ³ Data ³ 05/02/96 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡„o ³ Executa validacao do Campo VLDUSER do SX3.				  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³ Uso		 ³ Generico 												  ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+FUNCTION VldCgcCpf( cTipo,cCgcCpf )
+
+If cTipo == NIL .OR. Empty(cCgcCpf) .or. Empty(cTipo)
+	Return(.T.)
+EndIf
+
+If cCgcCpf == Nil;Return .T.;Endif
+
+If Len( Trim(cCgcCpf ) ) != 14 .And. cTipo == "J"
+	Help( " ",1,"NOLENCGC")
+	Return( .F. )
+EndIf
+
+If Len( Trim(cCgcCpf ) ) != 11 .And. cTipo == "F"
+	Help( " ",1,"NOLENCPF")
+	Return( .F. )
+EndIf
+
+Return( .T. )
+
+Function VldUser(cCampo)
+Local nRec, nOrd, lRet, cValid,cAlias
+
+cAlias:=Alias()
+dbSelectArea("SX3")
+nRec := Recno()
+nOrd := IndexOrd()
+dbSetOrder(2)
+dbSeek(cCampo)
+dbSetOrder(nOrd)
+dbSelectArea(cAlias)
+
+cValid := IIf(!Empty(SX3->X3_VLDUSER),Alltrim(SX3->X3_VLDUSER),"")
+
+IF !Empty(cValid)
+	Help := .t.
+	lRet := &(cValid)
+	Help := .f.
+	IF lRet == .f.
+		Help(" ",1,cCampo)
+	Endif
+Else
+	lRet := .t.
+Endif
+dbSelectArea("SX3")
+dbGoto(nRec)
+dbSelectArea(cAlias)
+
+Return lRet
+
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºPrograma  ³VldCodBar ºAutor  ³Claudio D. de Souza º Data ³  14/12/01   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³ Validar o codigo de barras ou a linha digitavel de titulos º±±
+±±º          ³ a pagar ou a receber                                       º±±
+±±º          ³ Parametros: cCodBar - Codigo de barras ou linha digitavel  º±±
+±±º          ³ Retorno   : .T. Codigo de barras ou linha digitavel validosº±±
+±±º          ³             .F. Caso contrario			                  º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ AP6                                                        º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Function VldCodBar(cCodBar)
+Local lRet := .T.
+Local nX
+Local	cCampo
+
+cCodBar := Alltrim(cCodBar)
+// Completa o tamanho do codigo de barras se ele for menor que 44 por se tratar de uma
+// linha digitavel.
+If Len(cCodBar) < 44
+	cCodBar := Left(cCodBar+Replicate("0", 48-Len(cCodBar)),47)
+Endif
+
+If  Len(cCodBar) > 47 .and. AllTrim(SubStr(cCodBar,48)) == ""
+	cCodBar := SubStr(cCodBar,1,47)
+EndIf
+
+Do Case
+Case Len(cCodBar)==44 // Validacao do codigo de Barras
+	// Se nao conseguir validar o DV do codigo de barras, tenta validar como
+	// se fosse titulo de concessionaria.	
+	If Dv_BarCode(Left(cCodBar,4)+SubStr(cCodBar,6))!=SubStr(cCodBar,5,1)
+		// Codigo de barras de concessionarias 
+		cCampo:=Left(cCodBar,3)+SubStr(cCodBar,5)
+		If VldMod(cCampo,cCodBar)!=SubStr(cCodBar,4,1)
+			Help(" ",1,"INVCDBAR",,OemToAnsi(STR0003),1,0) //'Codigo de Barras Inválido.'
+			lRet := .F. // Invalido
+		Endif	
+	Endif
+Case Len(cCodBar)==47 // Validacao da linha digitavel
+	// Elimina os digitos
+	cCodSemDv	:= Left(cCodBar,9)+SubStr(cCodBar,11,10)+SubStr(cCodBar,22,10)
+	cCodBar2		:= Left(cCodBar,4)+Substr(cCodBar,34)+Substr(cCodSemDv,5)
+	// Calcula os digitos e os compara com os digitos informados
+	For nX := 1 To 3
+		cCampo := SubStr(cCodSemDv,If(nX==1,1,If(nX==2,10,20)),If(nX==1,9,10))
+		If Mod10(cCampo) != SubStr(cCodBar,If(nX==1,10,If(nX==2,21,32)),1)
+			Help(" ",1,"INVCDBAR",,OemToAnsi(STR0004),1,0) //'Linha Digitável Inválida.'
+			lRet := .F.
+			Exit
+		Endif
+	Next
+	//Valido o digito verificador geral da linha digitada (pos. 33 da linha digitada)
+	If lRet
+		If Dv_BarCode(cCodBar2)!=SubStr(cCodBar,33,1)			
+			Help(" ",1,"INVCDBAR",,OemToAnsi(STR0004),1,0) //'Linha Digitável Inválida.'
+			lRet := .F.
+		Endif
+	Endif
+OtherWise // Validacao da linha digitavel de concessionarias
+	// Elimina os digitos
+	cCodSemDv := Left(cCodBar,11)+SubStr(cCodBar,13,11)+SubStr(cCodBar,25,11)+SubStr(cCodBar,37,11)
+	// Calcula os digitos e os compara com os digitos informados
+	For nX := 1 To Len(cCodSemDv) Step 11
+		cCampo := SubStr(cCodSemDv,nX,11)
+		nPos :=  If(nX==1,12,If(nX==12,24,If(nX==23,36,48)))
+		If VldMod(cCampo,cCodBar) != SubStr(cCodBar,nPos,1)
+			Help(" ",1,"INVCDBAR",,OemToAnsi(STR0003),1,0) //'Codigo de Barras Inválido.'
+			lRet := .F.
+				Exit
+		Endif
+	Next
+EndCase
+Return (lRet)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³Dv_BarCodeºAutor  ³Claudio D. de Souza º Data ³  14/12/01   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Calcula o digito verificador de um codigo de barras padrao  º±±
+±±º          ³Febraban.                                                   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ CodBarVl2                                                  º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function DV_BarCode( cBarCode )
+Local cDig
+Local nPos
+Local nAux := 0
+
+For nPos := 1 To 43
+	nAux += Val(SubStr(cBarCode,nPos,1)) * If( nPos<= 3, ( 5-nPos),     ;
+		If( nPos<=11, (13-nPos),     ;
+		If( nPos<=19, (21-nPos),     ;
+		If( nPos<=27, (29-nPos),     ;
+		If( nPos<=35, (37-nPos),     ;
+		(45-nPos) )))))
+Next
+nAux := nAux % 11
+cDig := If( (11-nAux)>9, 1, (11-nAux) )
+
+Return Str(cDig,1)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³Mod10     ºAutor  ³Claudio D. de Souza º Data ³  14/12/01   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Calcula o digito verificador de uma sequencia de numeros    º±±
+±±º          ³baseando-se no modulo 10. Utilizado para verificar o digito º±±
+±±º          ³em linhas digitaveis e codigo de barras de concessionarias  º±±
+±±º          ³de servicos publicos                                        º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ CodBarVl2                                                  º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Mod10( cNum )
+Local nFor    := 0
+Local nTot    := 0
+Local cNumAux
+
+// Verifico o numero de digitos e impar
+// Caso seja, adiciono um caracter
+If Len(cNum)%2 #0
+	cNum := "0"+cNum
+EndIf
+
+For nFor := 1 To Len(cNum)
+	If nFor%2 == 0
+		cNumAux := StrZero(2 * Val(SubStr(cNum,nFor,1)), 2)
+	Else
+		cNumAux := StrZero(Val(SubStr(cNum,nFor,1))    , 2)
+	Endif
+	nTot += ( Val(LEFT(cNumAux,1)) + Val(Right(cNumAux,1)) )
+Next
+
+nTot := nTot % 10
+nTot := If( nTot#0, 10-nTot, nTot )
+
+Return Str(nTot,1)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³Mod11     ºAutor  ³Adrianne Furtado    º Data ³  28/08/09   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Calcula o digito verificador de uma sequencia de numeros    º±±
+±±º          ³baseando-se no modulo 10. Utilizado para verificar o digito º±±
+±±º          ³em linhas digitaveis e codigo de barras de concessionarias  º±±
+±±º          ³de servicos publicos                                        º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ CodBarVl2                                                  º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function Mod11( cNum )
+Local nFor    := Len(cNum)
+Local nTot    := 0
+Local aNumAux := Array(Len(cNum),3) //array com o conteudo do cNum para ser multiplicado
+Local aLisMult:= {9,8,7,6,5,4,3,2} //Array/Lista de Multiplicadores
+Local nResto  
+Local nDv   
+Local nPos 	  := Len(aLisMult)
+
+For nFor := Len(cNum) To 1 Step -1
+	aNumAux[nFor,1] := Val(SubStr(cNum,nFor,1))
+	aNumAux[nFor,2] := aLisMult[nPos]
+	nPos--
+	If nPos == 0
+		nPos := 8
+	EndIf
+	aNumAux[nFor,3] := aNumAux[nFor,2] * aNumAux[nFor,1]
+	nTot += aNumAux[nFor,3]
+Next
+
+nResto := nTot % 11
+nDv := 11-nResto
+
+If (nResto == 0 .Or.	nResto == 1)
+	nDv := 0
+ElseIf nResto == 10
+	nDv := 1
+Else 
+	nDv := 11-nResto
+EndIf
+
+Return Str(nDv,1)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³VldMod    ºAutor  ³Adrianne Furtado    º Data ³  28/08/09   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Calcula o digito verificador de uma sequencia de numeros    º±±
+±±º          ³verificando qual o modulo do padrão FEBRABAN deve ser       º±±
+±±º          ³utilizado                                                   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ CodBarVl2                                                  º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Static Function VldMod( cNum , cCodBar)
+Local cCodSub3 := SubStr(cCodBar,3,1)
+Local cRet := ""
+If cCodSub3 == '6' .or. cCodSub3 == '7' 
+	cRet :=Mod10(cNum)
+ElseIf cCodSub3 == '8' .or. cCodSub3 == '9'
+	cRet :=Mod11(cNum)
+EndIf
+Return cRet
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³DigCodBar ºAutor  ³Mauricio Pequim Jr. º Data ³  09/12/02   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Retorna o digito verificador de um codigo de barras ou linhaº±±
+±±º          ³digitade de boletos. Utilizada na geração do arquivo envio  º±±
+±±º          ³de Cnab para pagamento de documentos com codigo de barras   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³Generico                                                    º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Function DigCodBar()
+
+Local cCampo := ""
+
+If Len(Alltrim(SE2->E2_CODBAR)) == 44
+	cCampo := Substr(SE2->E2_CODBAR,5,1)
+Else
+	cCampo := Substr(SE2->E2_CODBAR,33,1)
+EndIf	
+
+Return(cCampo)
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³IE        ³ Autor ³Eduardo Riera          ³ Data ³10.12.2002³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Rotina de validacao do digito verificador da IE             ³±±
+±±³          ³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL: Indica se a Inscricao estadual eh valida              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Inscricao estadual                         ³±±
+±±³          ³ExpL2: Unidade Federativa                                   ³±±
+±±³          ³ExpL3: Indica se o help devera ser demonstrado         (OPC)³±±
+±±³          ³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³          ³               ³                                            ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+#DEFINE TCD_UF     01
+#DEFINE TCD_TAM    02
+#DEFINE TCD_FATF   03
+#DEFINE TCD_DVXROT 04
+#DEFINE TCD_DVXMD  05
+#DEFINE TCD_DVXTP  06
+#DEFINE TCD_DVYROT 07
+#DEFINE TCD_DVYMD  08
+#DEFINE TCD_DVYTP  09
+#DEFINE TCD_DIG14  10
+#DEFINE TCD_DIG13  11
+#DEFINE TCD_DIG12  12
+#DEFINE TCD_DIG11  13
+#DEFINE TCD_DIG10  14
+#DEFINE TCD_DIG09  15
+#DEFINE TCD_DIG08  16
+#DEFINE TCD_DIG07  17
+#DEFINE TCD_DIG06  18
+#DEFINE TCD_DIG05  19
+#DEFINE TCD_DIG04  20
+#DEFINE TCD_DIG03  21
+#DEFINE TCD_DIG02  22
+#DEFINE TCD_DIG01  23
+#DEFINE TCD_CRIT   24
+
+Function IE(cIE,cUF,lHelp)
+
+Local aPesos   := {}
+Local aDigitos := {}
+Local aCalculo := {}
+Local aMi      := {}
+Local nX       := 0
+Local nY       := 0
+Local nDVX     := 0
+Local nDVY     := 0
+Local nPUF     := 0
+Local nPPeso   := 0
+Local nSomaS   := 0
+Local cDigito  := ""
+Local cDVX     := ""
+Local cDVY     := ""
+Local lRetorno := .T.
+Local cIEOrig  := cIE
+
+DEFAULT lHelp := .T.
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Ajusta o codigo da Inscricao Estadual                                   ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+cIE := AllTrim(cIE)
+cIE := StrTran(cIE,".","")
+cIE := StrTran(cIE,"/","")
+cIE := StrTran(cIE,"-","")
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Montagem da Tabela de Calculo                                           ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+If !Empty(cIEOrig) .And. Empty(cIE) .And. !Empty(cUF)
+	lRetorno := .F.
+EndIf
+If !Empty(cIE) .And. !"ISENT"$cIE .And. lRetorno
+	aadd(aCalculo,{"AC",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=0","=1","09","09","09","09","09","09","DVX",{||Len(cIE)==09}})
+	aadd(aCalculo,{"AC",13,00,"E ",11,"P02","E ",11,"P01","--","=0","=1","09","09","09","09","09","09","09","09","09","DVX","DVY",{||Len(cIE)==13}})
+	aadd(aCalculo,{"AL",09,00,"BD",11,"P01","  ",00,"   ","--","--","--","--","--","=2","=4","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"AP",09,00,"CE",11,"P01","  ",00,"   ","--","--","--","--","--","=0","=3","09","09","09","09","09","09","DVX",{||cIE<="030170009"}})
+	aadd(aCalculo,{"AP",09,01,"CE",11,"P01","  ",00,"   ","--","--","--","--","--","=0","=3","09","09","09","09","09","09","DVX",{||cIE>="030170010".And.cIE<="030190229"}})
+	aadd(aCalculo,{"AP",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=0","=3","09","09","09","09","09","09","DVX",{||cIE>="030190230"}})
+	aadd(aCalculo,{"AM",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","=0","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"BA",08,00,"E ",10,"P02","E ",10,"P03","--","--","--","--","--","--","09","09","09","09","09","09","DVY","DVX",{||SubStr(cIE,1,1)$"0123458" .AND. Len( cIE )==8}})
+	aadd(aCalculo,{"BA",08,00,"E ",11,"P02","E ",11,"P03","--","--","--","--","--","--","09","09","09","09","09","09","DVY","DVX",{||SubStr(cIE,1,1)$"679".AND. Len( cIE )==8}})
+	aadd(aCalculo,{"BA",09,00,"E ",10,"P02","E ",10,"P03","--","--","--","--","--","09","09","09","09","09","09","09","DVY","DVX",{||SubStr(cIE,2,1)$"0123458" .AND. Len( cIE )==9}})	
+	aadd(aCalculo,{"BA",08,00,"E ",11,"P02","E ",11,"P03","--","--","--","--","--","09","09","09","09","09","09","09","DVY","DVX",{||SubStr(cIE,2,1)$"679".AND. Len( cIE )==9}})
+	aadd(aCalculo,{"CE",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=0","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"DF",13,00,"E ",11,"P02","E ",11,"P01","--","=0","=7","=345","09","09","09","09","09","09","09","09","DVX","DVY",{|| Len(cIE)==13 .AND. SubStr(cIE,3,1)  $ "345"}})		
+	aadd(aCalculo,{"DF",13,00,"E ",11,"P02","E ",11,"P01","--","=0","=7","09","09","09","09","09","09","09","09","09","DVX","DVY",{|| Len(cIE)==13 .AND. !SubStr(cIE,3,1)  $ "345"}})		
+	aadd(aCalculo,{"ES",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"GO",09,01,"F ",11,"P01","  ",00,"   ","--","--","--","--","--","=1","=015","09","09","09","09","09","09","DVX",{||cIE>="101031050".And.cIE<="101199979"}})
+	aadd(aCalculo,{"GO",09,00,"F ",11,"P01","  ",00,"   ","--","--","--","--","--","=1","=015","09","09","09","09","09","09","DVX",{||!(cIE>="101031050".And.cIE<="101199979")}})
+	aadd(aCalculo,{"MA",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=1","=2","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"MT",11,00,"E ",11,"P01","  ",00,"   ","--","--","--","09","09","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"MS",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=2","=8","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"MG",13,00,"AE",10,"P10","E ",11,"P11","--","09","09","09","09","09","09","09","09","09","09","09","DVX","DVY",{||SubStr(cIE,1,1)<>"P".And.Len(cIE)==13}})
+	aadd(aCalculo,{"MG",09,00,"  ",00,"P09","  ",00,"   ","--","--","--","--","--","=P","=R","09","09","09","09","09","09","09",{||SubStr(cIE,1,1)=="P".And.Len(cIE)==9}})
+	aadd(aCalculo,{"PA",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=1","=5","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"PB",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"PR",10,00,"E ",11,"P09","E ",11,"P08","--","--","--","--","09","09","09","09","09","09","09","09","DVX","DVY",{||.T.}})
+	aadd(aCalculo,{"PE",14,01,"E ",11,"P07","  ",00,"   ","=1","=8","19","09","09","09","09","09","09","09","09","09","09","DVX",{||Len(cIE)==14}})
+	aadd(aCalculo,{"PE",09,00,"E ",11,"P02","E ",11,"P01","--","--","--","--","--","09","09","09","09","09","09","09","DVX","DVY",{||Len(cIE)==9}})
+	aadd(aCalculo,{"PI",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","=1","=9","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"RJ",08,00,"E ",11,"P08","  ",00,"   ","--","--","--","--","--","--","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"RN",09,00,"BD",11,"P01","  ",00,"   ","--","--","--","--","--","=2","=0","09","09","09","09","09","09","DVX",{||Len(cIE)==9}})
+	aadd(aCalculo,{"RN",10,00,"BD",11,"P11","  ",00,"   ","--","--","--","--","=2","=0","09","09","09","09","09","09","09","DVX",{||Len(cIE)==10}})
+	aadd(aCalculo,{"RS",10,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","09","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"RO",09,01,"E ",11,"P04","  ",00,"   ","--","--","--","--","--","19","09","09","09","09","09","09","09","DVX",{||Len(cIE)==9}})
+	aadd(aCalculo,{"RO",14,01,"E ",11,"P01","  ",00,"   ","09","09","09","09","09","09","09","09","09","09","09","09","09","DVX",{||Len(cIE)==14}})
+	aadd(aCalculo,{"RR",09,00,"D ",09,"P05","  ",00,"   ","--","--","--","--","--","=2","=4","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"SC",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","09","09","09","09","09","09","09","09","DVX",{||Len(cIE)==9}})
+	aadd(aCalculo,{"SP",12,00,"D ",11,"P12","D ",11,"P13","--","--","09","09","09","09","09","09","09","09","DVX","09","09","DVY",{||SubStr(cIE,1,1)<>"P"}})
+	aadd(aCalculo,{"SP",13,00,"D ",11,"P12","  ",00,"   ","--","=P","09","09","09","09","09","09","09","09","DVX","09","09","09",{||SubStr(cIE,1,1)=="P"}})
+	aadd(aCalculo,{"SE",09,00,"E ",11,"P01","  ",00,"   ","--","--","--","--","--","09","09","09","09","09","09","09","09","DVX",{||.T.}})
+	aadd(aCalculo,{"TO",11,00,"E ",11,"P06","  ",00,"   ","--","--","--","=2","=9","09","=1239","09","09","09","09","09","09","DVX",{||.T.}})
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³Montagem da Tabela de Pesos                                             ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	aadd(aPesos,{06,05,04,03,02,09,08,07,06,05,04,03,02,00}) //01
+	aadd(aPesos,{05,04,03,02,09,08,07,06,05,04,03,02,00,00}) //02
+	aadd(aPesos,{06,05,04,03,02,09,08,07,06,05,04,03,00,02}) //03
+	aadd(aPesos,{00,00,00,00,00,00,00,00,06,05,04,03,02,00}) //04
+	aadd(aPesos,{00,00,00,00,00,01,02,03,04,05,06,07,08,00}) //05
+	aadd(aPesos,{00,00,00,09,08,00,00,07,06,05,04,03,02,00}) //06
+	aadd(aPesos,{05,04,03,02,01,09,08,07,06,05,04,03,02,00}) //07
+	aadd(aPesos,{08,07,06,05,04,03,02,07,06,05,04,03,02,00}) //08
+	aadd(aPesos,{07,06,05,04,03,02,07,06,05,04,03,02,00,00}) //09
+	aadd(aPesos,{00,01,02,01,01,02,01,02,01,02,01,02,00,00}) //10
+	aadd(aPesos,{00,03,02,11,10,09,08,07,06,05,04,03,02,00}) //11
+	aadd(aPesos,{00,00,01,03,04,05,06,07,08,10,00,00,00,00}) //12
+	aadd(aPesos,{00,00,03,02,10,09,08,07,06,05,04,03,02,00}) //13
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³Validacao dos digitos da inscricao estadual                             ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	nPUF := aScan(aCalculo,{|x| x[TCD_UF] == cUF .And. Eval(x[TCD_CRIT])})
+	If nPUF <> 0
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³Validacao do Tamanho da inscricao estadual                              ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		Do Case 
+			Case aCalculo[nPUF][2] <> Len(cIE) .And. cUF == "TO"
+				cIE := SubStr(cIe,1,2)+"01"+SubStr(cIe,3)
+			Case Len(cIE) < 9 .And. cUf == "ES"
+				cIE := PadR(cIE, 9,"0")
+			Case Len(cIE) < 9	.And. cUf == "PI"
+				lRetorno := .F.		
+		EndCase
+		nY := TCD_DIG01+1
+		For nX := Len(cIE) To 1 STEP - 1
+			cDigito := SubStr(cIE,nX,1)	
+			nY--
+			Do Case
+			Case SubStr(aCalculo[nPUF][nY],1,2)=="DV"
+				If IsAlpha(cDigito) .Or. IsDigit(cDigito)
+					If SubStr(aCalculo[nPUF][nY],1,3)=="DVX"
+						cDVX := cDigito
+					Else
+						cDVY := cDigito
+					EndIf
+				Else
+					lRetorno := .F.
+				EndIf
+			Case SubStr(aCalculo[nPUF][nY],1,2)=="--"
+				lRetorno := .F.
+				Exit
+			Case SubStr(aCalculo[nPUF][nY],1,1)=="="
+				If !cDigito $ SubStr(aCalculo[nPUF][nY],2)
+					lRetorno := .F.
+					Exit
+				EndIf
+			OtherWise
+				If !(cDigito >= SubStr(aCalculo[nPUF][nY],1,1) .And. cDigito <= SubStr(aCalculo[nPUF][nY],2,1))
+					lRetorno := .F.
+					Exit
+				EndIf
+			EndCase
+			aadd(aDigitos,cDigito)
+		Next nX
+	Else
+		lRetorno := .F.		
+	EndIf
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³Calculo do digito verificador DVX                                       ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	If lRetorno
+		nPPeso := Val(SubStr(aCalculo[nPUF][TCD_DVXTP],2))
+		nSomaS := 0
+		aMI    := {}
+		For nX := 1 To Len(aDigitos)
+			aadd(aMi,Val(aDigitos[nX])*aPesos[nPPeso][15-nX])
+			nSomaS += Val(aDigitos[nX])*aPesos[nPPeso][15-nX]
+		Next nX	
+		If "A"$aCalculo[nPUF][TCD_DVXROT]
+			For nX := 1 To Len(aMi)				
+				nSomaS += Int(aMi[nX] / 10)
+			Next nX
+		EndIf
+		If "B"$aCalculo[nPUF][TCD_DVXROT]
+			nSomaS *= 10
+		EndIf
+		If "C"$aCalculo[nPUF][TCD_DVXROT]
+			nSomaS += 5+4*aCalculo[nPUF][TCD_FATF]
+		EndIf
+		If "D"$aCalculo[nPUF][TCD_DVXROT]
+			nDVX := Mod(nSomaS,aCalculo[nPUF][TCD_DVXMD])
+		EndIf
+		If "E"$aCalculo[nPUF][TCD_DVXROT]
+			nDVX := aCalculo[nPUF][TCD_DVXMD]-Mod(nSomaS,aCalculo[nPUF][TCD_DVXMD])
+		EndIf
+		If "F"$aCalculo[nPUF][TCD_DVXROT]
+			nDVX := aCalculo[nPUF][TCD_DVXMD]-Mod(nSomaS,aCalculo[nPUF][TCD_DVXMD])
+			If nDVX == 11
+				nDVX := 0
+			EndIf
+			If nDVX == 10
+				nDVX := aCalculo[nPUF][TCD_FATF]
+			EndIf
+		EndIf
+		If nDVX == 10
+			nDVX := 0
+		EndIf
+		If nDVX == 11
+			nDVX := aCalculo[nPUF][TCD_FATF]
+		EndIf
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³Calculo do digito verificador DVY                                       ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		If !Empty(aCalculo[nPUF][TCD_DVYROT])
+			nPPeso := Val(SubStr(aCalculo[nPUF][TCD_DVYTP],2))
+			nSomaS := 0
+			aMi    := {}
+			For nX := 1 To Len(aDigitos)
+				aadd(aMi,Val(aDigitos[nX])*aPesos[nPPeso][15-nX])
+				nSomaS += Val(aDigitos[nX])*aPesos[nPPeso][15-nX]
+			Next nX	
+			If "A"$aCalculo[nPUF][TCD_DVYROT]
+				For nX := 1 To Len(aMi)				
+					nSomaS += Int(aMi[nX] / 10)
+				Next nX
+			EndIf
+			If "B"$aCalculo[nPUF][TCD_DVYROT]
+				nSomaS *= 10
+			EndIf
+			If "C"$aCalculo[nPUF][TCD_DVYROT]
+				nSomaS *= 5+4*aCalculo[nPUF][TCD_FATF]
+			EndIf
+			If "D"$aCalculo[nPUF][TCD_DVYROT]
+				nDVY := Mod(nSomaS,aCalculo[nPUF][TCD_DVYMD])
+			EndIf
+			If "E"$aCalculo[nPUF][TCD_DVYROT]
+				nDVY := aCalculo[nPUF][TCD_DVYMD]-Mod(nSomaS,aCalculo[nPUF][TCD_DVYMD])
+			EndIf
+			If nDVY == 10
+				nDVY := 0
+			EndIf
+			If nDVY == 11
+				nDVY := aCalculo[nPUF][TCD_FATF]
+			EndIf
+		EndIf
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³Verificacao dos digitos calculados                                      ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		If Val(cDVX) <> nDVX .Or. Val(cDVY) <> nDVY
+			lRetorno := .F.
+		EndIf
+	EndIf
+EndIf
+If !lRetorno .And. lHelp
+	Help(" ",1,"IE")
+EndIf
+Return(lRetorno)
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³VldChavUni³ Rev.  ³Rodrigo de A Sartorio  ³ Data ³13.08.2003³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Validacao de chave unica para gravacao                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Alias do arquivo a ser pesquisado                    ³±±
+±±³          ³ExpC2: Campo origem da chave utilizada como pesquisa        ³±±
+±±³          ³       Se for mais de um campo deve ser passado como NIL ou ³±±
+±±³          ³       branco                                               ³±±
+±±³          ³ExpC3: Prefixo da pesquisa para verificar duplicidade (deve ³±±
+±±³          ³ ser utilizado quando o campo principal não é o primeiro    ³±±
+±±³          ³ do indice utilizado para a pesquisa ).                     ³±±
+±±³          ³ExpC4: Campo principal da chave (caso seja encontrada       ³±±
+±±³          ³ duplicidade é esse o valor que sera incrementado).         ³±±
+±±³          ³ExpC5: Complemento da pesquisa para verificar duplicidade   ³±±
+±±³          ³ (deve ser utilizado quando o campo principal não é a unica ³±±
+±±³          ³ informação do indice utilizado para a pesquisa ).          ³±±
+±±³          ³ExpN1: Ordem de pesquisa                                    ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ cChave := Conteudo atualizado do campo principal da Chave  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Function VldChavUni(cAlias,cCampo,cPrefixo,cChave,cComplemento,nOrder)
+Local aAreaAnt			:= GetArea()
+Local aAreaAlias		:= {}
+Local cMay				:= cAlias+Alltrim(xFilial(cAlias))
+Local nTamanho			:= If(ValType(cCampo)=='C'.And.!Empty(cCampo),TamSx3(cCampo)[1],Len(cChave))
+DEFAULT nOrder  		:= 1                                                 
+DEFAULT cPrefixo		:= ''
+DEFAULT cComplemento	:= ''
+If ValType(cAlias)=='C' .And. !Empty(cAlias)
+	dbSelectArea(cAlias)
+	aAreaAlias:=GetArea()
+	dbSetOrder(nOrder)
+	While (DbSeek(xFilial(cAlias)+cPrefixo+cChave+cComplemento) .or. !MayIUseCode(cMay+cPrefixo+cChave+cComplemento))
+		cChave := Soma1(cChave,nTamanho)
+	EndDo
+	RestArea(aAreaAlias)
+EndIf
+RestArea(aAreaAnt)
+RETURN cChave
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³fUpdateEnt³Autor  ³Eduardo Riera          ³ Data ³13.08.2003³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Funcao de atualizacao da tabela de entidades                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Pessoa                                     ³±±
+±±³          ³ExpC2: Alias da Entidade                                    ³±±
+±±³          ³ExpC3: Chave da Entidade                                    ³±±
+±±³          ³ExpC4: Indice de pesquisa para entidade                     ³±±
+±±³          ³ExpC5: Codigo da Empresa                                    ³±±
+±±³          ³ExpC6: Codigo da Filial                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: lUpdateEnt                                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function fUpdateEnt( cPessoa , cEntidade , cChaveEntidade , nIndice , cEmp , cFil )
+
+Local nRDZOrder		:= RDZ->( IndexOrd() )
+Local lUpdateEnt	:= .T.
+
+Local cRDZFil
+Local cKeyAux
+Local lAddNew
+Local nTamFilial	:= FWGETTAMFILIAL
+
+DEFAULT nIndice := GetRdzIndRel( cEntidade )
+DEFAULT cEmp	:= cEmpAnt
+DEFAULT cFil	:= cFilAnt
+
+cFil := xFilial( cEntidade , cFil )
+
+Begin Sequence
+
+	//Nao permite incluir um registro de filial diferente da filial presente na chave p/ evitar incoerencia
+    If cFil != SubStr(cChaveEntidade, 1, nTamFilial )
+    	AVISO("Título - Teste de Aviso", "Nao permite incluir um registro de filial diferente da filial presente na chave p/ evitar incoerencia", { "Fechar"}, 1)
+    	Break    
+    EndIf
+
+	/*
+	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	³Verificacao a operacao e atualiza os dados                              ³
+	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
+	RDZ->( dbSetOrder( RetOrdem( "RDZ" , "RDZ_FILIAL+RDZ_EMPENT+RDZ_FILENT+RDZ_ENTIDA+RDZ_CODENT+RDZ_CODRD0" ) ) )
+	cRDZFil := xFilial( "RDZ" , cFil )
+	IF RDZ->( MsSeek( cRDZFil + cEmp + cFil + cEntidade + cChaveEntidade , .F. ) )
+		cKeyAux := AllTrim(cChaveEntidade)
+		While RDZ->(;
+						!Eof() 										.and.;
+						( RDZ_FILIAL 			== cRDZFil 		)	.and.; 
+						( RDZ_EMPENT			== cEmp 		)	.and.;
+						( RDZ_FILENT			== cFil			)	.and.;
+						( RDZ_ENTIDA			== cEntidade	) 	.and.;
+						( AllTrim(RDZ_CODENT)	== cKeyAux 		)		 ;
+					)	
+			IF ( cPessoa <> RDZ->RDZ_CODRD0 )
+				IF !( lUpdateEnt := UndoRelRdz( NIL , NIL , NIL , NIL , .F. ) )
+					Break
+				EndIF
+			EndIF
+			RDZ->( dbSkip() )
+		End While
+	EndIF
+	
+	IF !Empty( cPessoa )
+		lAddNew := !( RDZ->( MsSeek( cRDZFil + cEmp + cFil + cEntidade + cChaveEntidade ) ) )
+		RDZ->( RecLock( "RDZ" , lAddNew ) )
+			RDZ->RDZ_FILIAL := cRDZFil
+			RDZ->RDZ_EMPENT := cEmp
+			RDZ->RDZ_FILENT := cFil
+			RDZ->RDZ_ENTIDA := cEntidade
+			RDZ->RDZ_CODENT := cChaveEntidade
+			RDZ->RDZ_CODRD0 := cPessoa
+			RDZ->RDZ_ENTIND := StrZero( nIndice , GetSx3Cache( "RDZ_ENTIND" , "X3_TAMANHO" ) )
+		RDZ->( MsUnLock() )
+	EndIF
+
+End Sequence
+	
+RDZ->( dbSetOrder( nRDZOrder ) )
+
+Return( lUpdateEnt )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³fUpdateRel³Autor  ³Eduardo Riera      V.I ³ Data ³13.08.2003³±±
+±±³          ³          ³       ³Marinaldo de Jesus V.II³ Data ³04/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Funcao de atualizacao da tabela de entidades                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³<vide parametros formais>                                   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/ 
+Function fUpdateRel(	cPessoa 		,;	//01 -> RD0_CODIGO
+						cEmp			,;	//02 -> Codigo da Empresa
+						cFil			,;	//03 -> Codigo da Filial
+						aBeforeUpd		,;	//04 -> Array com as Entidade para o Before Update
+						aLaterUpd		,;	//05 -> Array com as Entidades  para o Later Update
+						lUpdMemVar		,;	//06 -> Se ira atualizar variaveis de memoria
+						cMemVarAlias 	,;	//07 -> Alias das variaveis de memoria
+						aRelation		,; //08 -> Array com as Estruturas para o Update 
+						cChaveEntidade  ; //09 ->	RDZ_CODENT	
+					)
+
+Local aArea    		:= GetArea()
+Local aAreaRD0 		:= RD0->(GetArea()) 
+Local cSvEmpAnt  	:= cEmpAnt 
+Local cSvFilAnt  	:= cFilAnt 
+Local lOk			:= .F.
+Local nX       		:= 0 
+Local nPosAdmis		:= 0
+
+Local cEmpEnt
+Local cFilEnt
+Local cFieldRd0 
+Local cFieldEnt
+Local cLinha
+Local cEntidade
+Local cRDZFil
+Local cMemVar
+Local lOpenNew
+Local nOrder
+Local nSvOrder
+Local nY
+Local nZ
+
+DEFAULT cEmp			:= cEmpAnt
+DEFAULT cFil			:= cFilAnt
+DEFAULT aBeforeUpd		:= {}
+DEFAULT aLaterUpd		:= {}
+DEFAULT lUpdMemVar		:= .F.
+DEFAULT cMemVarAlias	:= "__cMemVarAlias__"
+DEFAULT aRelation		:= {}
+
+Begin Sequence
+
+	/*
+	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	³Obtem Informacoes para o Relacionamento                                 ³
+	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
+	IF ( Empty( aRelation ) )
+		IF !( lOk := BldArrRdZRel( @aRelation ) )
+			Break
+		EndIF
+	EndIF	
+
+	cRDZFil := xFilial("RDZ")
+
+	RDZ->( dbSetorder( RetOrdem( "RDZ" , "RDZ_FILIAL+RDZ_CODRD0+RDZ_EMPENT+RDZ_FILENT+RDZ_ENTIDA" ) ) )
+
+	IF !( RDZ->( MsSeek( cRDZFil + cPessoa + cEmp ) ) )
+		Break
+	EndIF
+
+	/*
+	ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	³Analisa as tabelas a serem atualizadas                                  ³
+	ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ*/
+	cChaveEntidade := IIF(Empty(cChaveEntidade),"",AllTrim(cChaveEntidade ))
+	While RDZ->(	!Eof()							.and. ;
+		  			RDZ_FILIAL == cRDZFil			.and. ;
+		  			RDZ_CODRD0 == cPessoa			.and. ;
+		  			RDZ_EMPENT == cEmp				.and. ;
+					AllTrim(RDZ_CODENT)	== cChaveEntidade ;
+				)
+	
+		cEntidade	:= RDZ->RDZ_ENTIDA
+		cEmpEnt 	:= RDZ->RDZ_EMPENT
+		cFilEnt		:= RDZ->RDZ_FILENT
+
+		IF ( lUpdMemVar )
+			IF ( cEntidade <> cMemVarAlias )
+				RDZ->( dbSkip() )
+				Loop
+			EndIF
+		EndIF
+
+		lOpenNew	:= .F.
+		IF !( EqualFullName( cEntidade , cEmpEnt , cEmp ) )
+			nSvOrder	:= ( cEntidade )->( IndexOrd() )
+			nOrder 		:= Val( RDZ->RDZ_ENTIND )
+			IF !( lOpenNew := EmpChangeTable( cEntidade , cEmpEnt , cEmp , nOrder ) )
+				Break
+			EndIF
+		EndIF	
+
+		cFil	:= xFilial( cEntidade , cFilEnt )
+
+		IF !( RDZ->( MsSeek( cRDZFil + cPessoa + cEmp + cFil + cEntidade ) ) )
+			RDZ->( dbSkip() )
+			Loop
+		EndIF
+		
+		While RDZ->(	!Eof()							.and. ;
+			  			RDZ_FILIAL == cRDZFil			.and. ;
+		  				RDZ_CODRD0 == cPessoa			.and. ;
+		  				RDZ_EMPENT == cEmp				.and. ;
+		  				RDZ_FILENT == cFil				.and. ;
+		  				RDZ_ENTIDA == cEntidade			.and.;
+		  				AllTrim(RDZ_CODENT)  == cChaveEntidade;
+					)
+			
+			cFilAnt := RDZ->RDZ_FILENT
+			
+			IF ( ( lUpdMemVar ) .or. ( cEntidade )->( MsSeek( RDZ->RDZ_CODENT , .F. ) ) ) //RDZ_CODENT devera ser formado pela Filial + Codigo
+			
+				If cEntidade == "SRA"
+					If SRA->RA_SITFOLH == "D"
+						RDZ->( dbSkip() )
+						Loop
+					EndIf
+				EndIf
+				
+				nX := aScan( aRelation , { |x| ( x[ 01 ] == cEntidade ) } )
+
+				IF ( nX > 0 )
+
+					nZ := Len( aRelation[ nX , 02 ] )
+                    
+                    IF ( nZ > 0 )
+
+						IF ( aScan( aBeforeUpd , { |x| ( Upper( AllTrim( x ) ) == cEntidade ) } ) > 0 )
+							IF ( ValType( aRelation[ nX , 03 ] ) == "B" )
+								Eval( aRelation[ nX , 03 ] , cEntidade , aRelation[ nX , 02 ] )
+							EndIF
+						EndIF
+		
+						IF !( lUpdMemVar )
+							( cEntidade )->( RecLock( cEntidade , .F. ) )
+						EndIF	
+						For nY := 1 To nZ
+							cFieldEnt	:= aRelation[ nX , 02 , nY , 01 ]
+							cFieldRd0	:= aRelation[ nX , 02 , nY , 02 ]
+							aRelation[ nX , 02 , nY , 03 ]  := ( cEntidade )->( FieldGet( FieldPos( cFieldEnt ) ) )
+							aRelation[ nX , 02 , nY , 04 ]	:= RD0->( FieldGet( FieldPos( cFieldRd0 ) ) )
+							IF cFieldEnt == "RA_ADMISSA"  
+								nPosAdmis := nY
+								Loop
+							EndIf
+							If cFieldEnt == "RA_CC" .AND. nPosAdmis > 0 .AND. aRelation[ nX , 02 , nPosAdmis , 03 ] != aRelation[ nX , 02 , nPosAdmis , 04 ] //nao atualiza centro de custo para multv
+								Loop
+							EndIf
+							IF ( lUpdMemVar )
+								cMemVar := ( "M->"+cFieldEnt )
+								SetMemVar( cMemVar , aRelation[ nX , 02 , nY , 04 ] )
+							Else
+								( cEntidade )->( FieldPut( FieldPos( cFieldEnt ) , aRelation[ nX , 02 , nY , 04 ] ) )
+							EndIF
+			        	Next nY
+			        	IF !( lUpdMemVar )
+			        		( cEntidade )->( MsUnLock() )
+			        	EndIF	
+		
+						IF ( aScan( aLaterUpd , { |x| ( Upper( AllTrim( x ) ) == cEntidade ) } ) > 0 )
+							IF ( ValType( aRelation[ nX , 04 ] ) == "B" )
+								Eval( aRelation[ nX , 04 ] , cEntidade , aRelation[ nX , 02 ] )
+							EndIF
+						EndIF
+
+					EndIF
+						
+				EndIF
+			
+			EndIF 
+					
+			RDZ->( dbSkip() )
+
+		End While
+		
+		IF ( lOpenNew )
+			EmpChangeTable( cEntidade , cEmp , cEmpEnt , nSvOrder )
+		EndIF
+
+	End While
+
+End Sequence
+	
+cEmpAnt := cSvEmpAnt
+cFilAnt := cSvFilAnt
+
+RestArea(aAreaRD0)
+RestArea(aArea)
+
+Return( lOk )
+
+/* 
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³EntUpdateRd0 ³Autor  ³Marinaldo de Jesus     ³ Data ³03/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Insert/Update das Entidades para o RD0                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³<vide parametros formais>                                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³lOk                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                       ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function EntUpdateRd0(	cRd0Codigo		,;	//01 -> Codigo da Pessoa
+						cEntidade		,;	//02 -> Entidade Relacionada
+						cChaveEntidade	,;	//03 -> Chave da Entidade
+						nOrderEnt		,;	//04 -> Ordem
+						nRecnoEnt		,;	//05 -> Recno da Entidade
+						cEmp			,;	//06 -> Codigo da Empresa
+						cFil			,;	//07 -> Codigo da Filial
+						cRd0Tipo		,;	//08 -> Conteudo para o RD0_TIPO "1"=Interno;"2"=Externo
+						lUpdateRel		,;	//09 -> Se Atualiza as Entidades Relacionadas
+						aBeforeUpd		,;	//10 -> Array com as Entidades para o Before Update
+						aLaterUpd		,;	//11 -> Array com as Entidades para o Later Update
+						aRelation		,;	//12 -> Array com as Estruturas para o Update
+						aDadosRd0		 ;  //13 -> Array com as informações de Login e Senha
+				  )
+         
+Local aArea			:= GetArea()
+Local aAreaRD0		:= RD0->( GetArea() )
+Local cSvEmpAnt 	:= cEmpAnt
+Local cSvFilAnt 	:= cFilAnt
+Local cSvArqTab		:= cArqTab
+
+Local aGetRd0
+Local aAreaEnt
+Local cFieldEnt
+Local cFieldRd0
+Local cRd0Filial
+Local lOk
+Local lAddNew
+Local lEqualFullName
+Local lEqualNameAI3
+Local lTransfEmp	:= ""
+Local nX
+Local nY
+Local nZ		
+Local nRd0Order
+Local uConteudo
+Local MV_RESEXP	:= SuperGetMv("MV_RESEXP",.T., '0')  // Parametro para Integracao com Reserve
+Local lAltCad		:= .F.
+Local lProcTrans	:= .F.
+
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+//³O parametro MV_GSPUBL = "2" identifica que eh GSP-Caixa. Se existir o³
+//³parametro MV_VDFLOGO eh porque eh GSP-MP (novo modelo de GSP).       ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Private cGsPubl := SuperGetMv("MV_GSPUBL",,"1")
+If cGsPubl == "2" .And. GetMv("MV_VDFLOGO",,"0") <> "0"
+   cGsPubl := "3"
+EndIf
+
+DEFAULT cEmp 		:= cEmpAnt
+DEFAULT cFil 		:= cFilAnt
+DEFAULT nOrderEnt	:= GetRdzIndRel( cEntidade )
+DEFAULT aDadosRd0	:= {}
+
+Begin Sequence
+
+	DEFAULT aRelation	:= {}
+	IF ( Empty( aRelation ) )
+		IF !( lOk := BldArrRdZRel( @aRelation ) )
+			Break
+		EndIF
+	EndIF	
+
+	nX := aScan( aRelation , { |x| Upper( AllTrim( x[1] ) ) == Upper( AllTrim( cEntidade ) ) } )
+	IF !( lOk := ( nX > 0 ) )
+		Break
+	EndIF
+
+	IF !( lOk :=( ( nZ := Len( aRelation[ nX , 02 ] ) ) > 0 ) )
+		Break
+	EndIF
+
+	IF !( lOk := !Empty( nOrderEnt ) )
+		Break
+	EndIF
+
+	aAreaEnt := ( cEntidade )->( GetArea() )
+	IF Empty( nRecnoEnt )
+		( cEntidade )->( dbSetOrder( nOrderEnt ) )
+		IF !( lOk := ( ( cEntidade )->( MsSeek( cChaveEntidade , .F. ) ) ) )
+			Break
+		EndIF
+		nRecnoEnt := ( cEntidade )->( Recno() )
+	EndIF
+
+	lEqualFullName := EqualFullName( "RD0" , cEmp , cEmpAnt )
+	lEqualNameAI3  := EqualFullName( "AI3" , cEmp , cEmpAnt )
+
+	EmpChangeTable( "RD0" , cEmp , cEmpAnt , 1 )
+	EmpChangeTable( "RDZ" , cEmp , cEmpAnt , 1 )
+
+	cEmpAnt := cEmp
+	cFilAnt := cFil
+
+	lTransfEmp	:= IsInCallStack("GPEA180") .And. cSvEmpAnt != cEmp
+	
+	IF !( ExistePessoa( cEntidade , cChaveEntidade , cEmp , cFil , .T. ) )
+		IF Empty( cRd0Codigo )
+			IF ( lEqualFullName )
+				aGetRd0 := GetRd0Codigo( cEmp , cFil , .F. )
+				IF !( lOk := aGetRd0[1] )
+					Break
+				EndIF
+				cRd0Codigo	:= aGetRd0[2]
+			Else 
+				aGetRd0 := StartJob( "GetRD0Codigo" , GetEnvServer() , .T. , cEmp , cFil , .T. )
+				IF !( lOk := aGetRd0[1] )
+					Break
+				EndIF
+				cRd0Codigo	:= aGetRd0[2]
+			EndIF
+		EndIF
+	Else
+		IF Empty( cRd0Codigo )
+			cRd0Codigo := fGetPessoa( cEntidade , cChaveEntidade , cEmp , cFil )
+		EndIF
+	EndIF
+
+	nRd0Order := RetOrdem( "RD0" , "RD0_FILIAL+RD0_CODIGO" )
+	RD0->( dbSetOrder( nRd0Order ) )
+	
+	cRd0Filial	:= xFilial("RD0")
+	lAddNew 	:= Empty(cRd0Codigo) .Or. !( RD0->( dbSeek( cRd0Filial + cRd0Codigo , .F. ) ) )
+	If !lAddNew .And. lTransfEmp
+		lAddNew := MsgNoYes( OemToAnsi(STR0002), OemToAnsi(STR0001) )//"Participante já existente. Clique em 'Não' para atualizar o atual ou em 'Sim' para criar um novo participante"###"Atenção"
+		If lAddNew
+			IF ( lEqualFullName )
+				aGetRd0 := GetRd0Codigo( cEmp , cFil , .F. )
+				IF !( lOk := aGetRd0[1] )
+					Break
+				EndIF
+				cRd0Codigo	:= aGetRd0[2]
+			Else 
+				aGetRd0 := StartJob( "GetRD0Codigo" , GetEnvServer() , .T. , cEmp , cFil , .T. )
+				IF !( lOk := aGetRd0[1] )
+					Break
+				EndIF
+				cRd0Codigo	:= aGetRd0[2]
+			EndIF		
+		EndIf
+	EndIf
+	RecLock( "RD0" , lAddNew )
+
+	DEFAULT cRd0Tipo	:= "1"
+
+	( cEntidade )->( MsGoto( nRecnoEnt ) )
+	RD0->( FieldPut( FieldPos( "RD0_FILIAL" )	, cRd0Filial	) )
+	RD0->( FieldPut( FieldPos( "RD0_CODIGO" )	, cRd0Codigo	) )
+	RD0->( FieldPut( FieldPos( "RD0_TIPO"   )	, cRd0Tipo		) )
+	For nY := 1 To nZ
+		cFieldEnt	:= aRelation[ nX , 2 , nY , 1 ]
+		uConteudo	:= ( cEntidade )->( FieldGet( FieldPos( cFieldEnt ) ) )      
+		cFieldRd0	:= aRelation[ nX , 2 , nY , 2 ]    
+		If cFieldEnt == "RA_ENDEREC"
+			If ColumnPos("RD0_NUMEND") == 0
+				uConteudo := RTrim( uConteudo )
+				uConteudo += " " + SRA->RA_NUMENDE
+			EndIf
+		EndIf
+		If FunName() == "APDA020" .And. cEntidade == "SRA" .And. SRA->RA_CATFUNC == "A"
+			If !Empty(uConteudo) .and. Empty( RD0->( FieldGet( FieldPos( cFieldRd0 ) ) ) )
+				RD0->( FieldPut( FieldPos( cFieldRd0 ) , uConteudo ) ) 
+			EndIf
+		Else
+	   		RD0->( FieldPut( FieldPos( cFieldRd0 ) , uConteudo ) ) 
+	   		If Alltrim(cFieldRd0) == "RD0_MSBLQL" 
+		   		If SRA->RA_SITFOLH != "D"
+					RD0->RD0_MSBLQL := "2"
+				Else	
+					RD0->RD0_MSBLQL := "1"
+				EndIf
+			EndIf	
+		EndIf
+   	Next nY
+
+   	If cGsPubl == "3" // Gestao Publica	
+   	   cCargo := Posicione("SRJ",1,xFilial("SRJ")+SRA->RA_CODFUNC,"RJ_CARGO")
+   		RD0->( FieldPut( FieldPos("RD0_PORTAL"), Posicione("SQ3",1,xFilial("SQ3")+cCargo ,"Q3_PORTAL")))
+ 	Endif
+ 	
+	//--------------------------
+	// Integracao Totvs Reserve
+	//--------------------------
+	If MV_RESEXP != '0' //Verifica se esta ativa
+
+		lProcTrans	:= IsInCallStack("GPEA180")
+		lAltCad	:= !lProcTrans .And. !Empty(RD0->RD0_EMPATU) .And. !Empty(RD0->RD0_FILATU)
+
+		If lAddNew //Inclusao
+			RD0->RD0_RESERV := '0' //Não processado
+			RD0->RD0_EMPATU := cEmp
+			RD0->RD0_FILATU := cFil
+		ElseIf lAltCad //Alteracao 
+			RD0->RD0_RESERV := '0' //Não processado
+		ElseIf lProcTrans	//Transferencia
+			RD0->RD0_RESERV := '6' //Pendente Transferencia
+			RD0->RD0_FILANT := RD0->RD0_FILATU
+			RD0->RD0_EMPANT := RD0->RD0_EMPATU
+			RD0->RD0_EMPATU := cEmp
+			RD0->RD0_FILATU := cFil
+		EndIf
+
+		If MV_RESEXP $ '1|3' //Integracao online
+			If lAddNew .Or. lAltCad //Inclusao/Alteracao
+				FINA657Mnt(cEmp,cFil)
+			ElseIf lProcTrans //Transferencia
+				FINA657TRN()
+			EndIf
+		ElseIf MV_RESEXP <> '0' // Integrado com Reserve Marcar
+			DatIntRes()
+			RecLock("RD0", .F.)
+			RD0->RD0_RESERV := ' ' // Não Processado
+			RD0->(MsUnlock())
+		EndIf
+
+	EndIf
+
+	If !Empty(aDadosRd0)
+		RD0->( FieldPut( FieldPos( "RD0_LOGIN" )	, aDadosRd0[1]	) )
+		RD0->( FieldPut( FieldPos( "RD0_SENHA" )	, aDadosRd0[2]	) )
+		If lEqualNameAI3
+			RD0->( FieldPut( FieldPos( "RD0_PORTAL" )	, aDadosRd0[3]	) )
+		EndIf
+	EndIf
+
+	RD0->( MsUnLock() ) 
+    
+	//-- Posiciona no SRA para gravar o RDZ (Relacionamento)
+	If cEntidade == "SRA"
+		IF !GotoNextRecno( cEntidade , nRecnoEnt , nOrderEnt )
+			Break
+		EndIF
+		cChaveEntidade		:= (cEntidade) -> ( &(GetRdzKeyRel( cEntidade )) )
+	Endif    
+	
+	IF !( fUpdateEnt( cRd0Codigo , cEntidade , cChaveEntidade , nOrderEnt , cEmp , cFil ) )
+		Break
+	EndIF
+
+	DEFAULT lUpdateRel := .T.
+	IF ( lUpdateRel )
+		fUpdateRel(	cRd0Codigo 		,;	//01 -> RD0_CODIGO
+					cEmp			,;	//02 -> Codigo da Empresa
+					cFil			,;	//03 -> Codigo da Filial
+					aBeforeUpd		,;	//04 -> Array com as Entidade para o Before Update
+					aLaterUpd		,;	//05 -> Array com as Entidades  para o Later Update
+					.F.				,;	//06 -> Se ira atualizar variaveis de memoria
+					NIL			 	,;	//07 -> Alias das variaveis de memoria
+					aRelation		,;	//08 -> Array com as Estruturas para o Update
+					cChaveEntidade ;	//09 ->	RDZ_CODENT
+				)
+	EndIF
+
+End Sequence
+
+EmpChangeTable( "RD0" , cSvEmpAnt , cEmpAnt , 1 )
+EmpChangeTable( "RDZ" , cSvEmpAnt , cEmpAnt , 1 )
+cEmpAnt := cSvEmpAnt
+cFilAnt := cSvFilAnt
+cArqTab	:= cSvArqTab
+
+IF !Empty( aAreaEnt )
+	RestArea( aAreaEnt )
+EndIF
+RestArea( aAreaRD0 )
+RestArea( aArea )
+
+Return( lOk )
+
+/* 
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³GetRd0Codigo ³Autor  ³Marinaldo de Jesus     ³ Data ³16/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Obtem Codigo Exclusivo para o RD0                              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³<vide parametros formais>                                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³lOk                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                       ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function GetRd0Codigo( cEmp , cFil , lRpcSet )
+
+Local cRd0Codigo
+Local lOk
+Local nGetSX8Len
+
+DEFAULT lRpcSet	:= .F.
+
+IF ( lRpcSet )
+	RpcSetType( 3 )
+	RpcSetEnv( cEmp , cFil )
+EndIF
+
+nGetSX8Len	:= GetSX8Len()
+lOk			:= Rd0GetCodigo( @cRd0Codigo , .F. )
+
+While ( GetSX8Len() > nGetSX8Len )
+	ConfirmSX8()
+End While
+
+Return( { lOk , cRd0Codigo } )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³BldArrRdZRel³Autor³Marinaldo de Jesus     ³ Data ³04/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Monta Array com os Relacionamentos                          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function BldArrRdZRel( aRelation )
+                
+Local cFile	:= GetIniRdzRel()
+
+Local aFileInfo
+Local cEntidade
+Local cFieldEnt
+Local cFieldRd0
+Local cFirstByte
+Local nX
+Local nY
+Local lOk
+Local cLinha
+Local nLinhas	
+Local nI		:= 1
+Local aLinhas	:= {}
+
+Static __aLastRelation__
+Static __aLastFileInfo__
+
+Begin Sequence
+
+	DEFAULT __aLastFileInfo__	:= Directory( cFile, "A", , .F., )
+
+	IF !( lOk := !Empty( __aLastFileInfo__ ) )
+		Break
+	EndIF
+
+	aFileInfo	:= Directory( cFile, "A", , .F., )
+
+	IF !Empty( aFileInfo )
+		IF !( fCompArray( __aLastFileInfo__ , aFileInfo ) )
+			__aLastFileInfo__ := aClone( aFileInfo )
+			__aLastRelation__ := {}
+		EndIF
+	EndIF
+
+	DEFAULT __aLastRelation__ := {}
+	IF !( lOk := !Empty( __aLastRelation__ ) )
+		IF !( lOk := File( cFile, , .F.  ) )
+			Break
+		EndIF
+	Else
+		aRelation := aClone( __aLastRelation__ )
+		Break
+	EndIF
+
+	nX := 0
+	aLinhas := FileSrvToArr(cFile,,.F.)
+	nLinhas		:= Len(aLinhas)
+	
+	For nI := 1 To nLinhas
+		
+		cLinha := alltrim(aLinhas[nI])
+		clinha := replace(clinha,chr(13),"")
+		clinha := replace(clinha,chr(10),"")
+		If Empty(cLinha)
+			Loop
+		EndIf 
+				
+		cFirstByte := SubStr( cLinha , 1 , 1 )
+		IF ( cFirstByte == "[" )	//Alias ( Entidade Relacionada )
+			cEntidade := SubStr( cLinha , 2 , 3 )
+			aAdd( __aLastRelation__ , { cEntidade , {} , NIL , NIL , NIL } )
+			++nX
+		ElseIF ( cFirstByte == "#" )	//bBeforeUpd
+			IF ( SubStr( cLinha , 2 , 1 ) == "{" ) .and. ;
+			   ( SubStr( cLinha , -1 ) == "}" )
+				IF ( ( nY := At( "|" , cLinha ) ) > 0 )
+					IF ( At( "|" , SubStr( cLinha , nY + 1 ) ) > 0 )
+						__aLastRelation__[nX,3] := &( cLinha )
+					EndIF
+				EndIF
+			EndIF
+		ElseIF ( cFirstByte == "@" )	//bLaterUpd
+			IF ( SubStr( cLinha , 2 , 1 ) == "{" ) .and. ;
+			   ( SubStr( cLinha , -1 ) == "}" )
+				IF ( ( nY := At( "|" , cLinha ) ) > 0 )
+					IF ( At( "|" , SubStr( cLinha , nY + 1 ) ) > 0 )
+						__aLastRelation__[ nX , 4 ] := &( cLinha )
+					EndIF
+				EndIF
+			EndIF
+		ElseIF ( cFirstByte == "!" )	//Chave de Relacionamento
+			__aLastRelation__[ nX , 5 ] := SubStr( cLinha , 2 )
+		Else									//Fields ( Campos Relacionados )
+			IF ( ( nY := At( "=" , cLinha ) ) == 0 )
+				Loop
+			EndIF
+			cFieldRd0 := SubStr( cLinha , nY+1 )
+			IF ( RD0->( FieldPos( cFieldRd0 ) ) == 0 )
+				Loop
+			EndIF
+			cFieldEnt := SubStr( cLinha , 1 , nY-1 )
+			IF ( ( cEntidade )->( FieldPos( cFieldEnt ) ) == 0 )
+				Loop
+			EndIF
+			aAdd( __aLastRelation__[ nX , 2 ] , { cFieldEnt , cFieldRd0 , NIL , NIL } ) 
+		EndIF
+	Next nI
+
+	aRelation := aClone( __aLastRelation__ )
+	
+	lOk := ( Len( aRelation ) > 0 )
+
+End Sequence
+
+Return( lOk )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³GetRdzKeyRel³Autor³Marinaldo de Jesus     ³ Data ³16/08/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Retorna a Chave de Relacionamento das Entidades com o RDZ   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³cEntidade -> Entidade Relacionada                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³cGetRdZKeyRel                                               ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function GetRdzKeyRel( cEntidade )
+
+Local cGetRdzKeyRel	:= ""
+
+Local aRelation
+Local nEntidade
+
+IF ( BldArrRdZRel( @aRelation ) )
+	cEntidade	:= Upper( AllTrim( cEntidade ) )
+	nEntidade	:= aScan( aRelation , { |x| x[ 1 ] == cEntidade } )
+	IF ( nEntidade > 0 )
+		cGetRdzKeyRel := aRelation[ nEntidade , 5 ]
+	EndIF	
+EndIF
+
+Return( cGetRdzKeyRel )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³GetRdzIndRel³Autor³Marinaldo de Jesus     ³ Data ³16/08/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Retorna o Numero da Ordem de Relacionamento das Entidades   ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³cEntidade -> Entidade Relacionada                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³nOrder													  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function GetRdzIndRel( cEntidade )
+DEFAULT cEntidade := ""
+Return( RetOrdem( cEntidade , GetRdzKeyRel( cEntidade ) , .T. )  )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³GetIniRdzRel³Autor³Marinaldo de Jesus     ³ Data ³03/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Retorna Arquivo valido para o Relacionamento entre o RD0   e³±±
+±±³          ³as Demais Entidades										  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function GetIniRdzRel()
+Return( "msrelrdz.ini" )
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³fGetPessoa³Autor  ³Eduardo Riera          ³ Data ³28.11.2003³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Funcao de recuperacao do codigo da pessoa amarrada a Entid. ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Chave da Entidade                                    ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function fGetPessoa( cEntidade , cChaveEntidade , cEmp , cFil , lPosicione )
+
+Local cRd0Codigo
+Local nRd0SvOrd
+Local nRDZsvOrd
+
+DEFAULT cEmp 		:= cEmpAnt
+DEFAULT cFil 		:= cFilAnt
+DEFAULT lPosicione	:= .T.
+
+cFil := xFilial( cEntidade , cFil )
+
+nRDZsvOrd := RDZ->( IndexOrd() )
+RDZ->( dbSetOrder( RetOrdem( "RDZ" , "RDZ_FILIAL+RDZ_EMPENT+RDZ_FILENT+RDZ_ENTIDA+RDZ_CODENT+RDZ_CODRD0" ) ) )
+IF ( RDZ->( !MsSeek( xFilial( "RDZ" ) + cEmp + cFil + cEntidade + cChaveEntidade ) ) )
+	RDZ->( MsGoto( 0 ) )
+EndIF
+RDZ->( dbSetOrder( nRDZsvOrd ) )
+
+cRd0Codigo := RDZ->RDZ_CODRD0
+
+IF ( lPosicione )
+	nRd0SvOrd := RD0->( IndexOrd() )
+	RD0->( dbSetOrder( RetOrdem( "RD0" , "RD0_FILIAL+RD0_CODIGO" ) ) )
+	RD0->( MsSeek( xFilial( "RD0" , cFil ) + cRd0Codigo , .F. ) )
+	RD0->( dbSetOrder( nRd0SvOrd ) )
+EndIF
+
+Return( cRd0Codigo )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³ExistePessoa ³Autor³Marinaldo de Jesus    ³ Data ³03/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se Existe Relacionamento                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Chave da Entidade                                    ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function ExistePessoa( cEntidade , cChaveEntidade , cEmp , cFil , lPosicione )
+Return( !Empty( fGetPessoa( cEntidade , cChaveEntidade , cEmp , cFil , lPosicione ) ) )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³RdzExisteRel ³Autor³Marinaldo de Jesus    ³ Data ³03/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se Existe Relacionamento                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Codigo do RD0                                        ³±±
+±±³          ³ExpC3: Codigo da Empresa                                    ³±±
+±±³          ³ExpC4: Codigo da Filial                                     ³±±
+±±³          ³ExpL5: Se posiciona o Recno                                 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function RdzExisteRel( cEntidade , cRd0Codigo , cEmp , cFil , lPosicione )
+         
+Local nRd0SvOrd
+Local nRDZsvOrd
+Local nEntOrd
+Local nEntSvOrd
+Local nRecAux		:= (cEntidade)->(Recno())
+Local lExisteRel
+Local lSeekRel		:= .F.
+Local aNoFilEnt		:= {}
+
+DEFAULT cEmp		:= cEmpAnt
+DEFAULT cFil		:= cFilAnt
+DEFAULT lPosicione	:= .T.
+
+cFil		:= xFilial( cEntidade , cFil )
+nRDZsvOrd	:= RDZ->( IndexOrd() )
+RDZ->( dbSetOrder( RetOrdem( "RDZ" , "RDZ_FILIAL+RDZ_CODRD0+RDZ_EMPENT+RDZ_FILENT+RDZ_ENTIDA" ) ) )
+
+aAdd( aNoFilEnt, "SRA" ) //Array com tabelas que utilizam pesquisa RDZ_FILIAL+RDZ_CODRD0+RDZ_EMPENT
+
+lSeekRel := ( aScan( aNoFilEnt, { |Ent| Ent == cEntidade } ) > 0 ) //Verifica se tabela usa pesquisa especifica
+
+IF ( lExisteRel := RetRDZSeek( cRd0Codigo, cEmp, cFil, cEntidade, lSeekRel ) )
+
+	IF ( lPosicione )
+		nRd0SvOrd := RD0->( IndexOrd() )
+		RD0->( dbSetOrder( RetOrdem( "RD0" , "RD0_FILIAL+RD0_CODIGO" ) ) )
+		RD0->( MsSeek( xFilial( "RD0" , cFil ) + cRd0Codigo , .F. ) )
+		RD0->( dbSetOrder( nRd0SvOrd ) )
+		nEntOrd := GetRdzIndRel( cEntidade )
+		IF ( nEntOrd == 0 )
+			nEntOrd := ( cEntidade )->( Val( RDZ->RDZ_ENTIND ) )
+		EndIF
+		( cEntidade)->( dbSetOrder( nEntOrd ) )
+		If !(( cEntidade )->( MsSeek( RDZ->RDZ_CODENT , .F. ) )) .and. cEntidade == "SRA"//Se não encontrar o funcionário, reposiciona na matrícula anterior
+			lExisteRel := .F.
+			( cEntidade)->(dbGoTo(nRecAux))
+		EndIf
+		( cEntidade)->( dbSetOrder( nEntSvOrd ) )
+	EndIF
+EndIF
+RDZ->( dbSetOrder( nRDZsvOrd ) )
+
+Return( lExisteRel )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³EntExisteRel ³Autor³Marinaldo de Jesus    ³ Data ³04/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se Existe Relacionamento                           ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Chave da Entidade                                    ³±±
+±±³          ³ExpC3: Codigo da Empresa                                    ³±±
+±±³          ³ExpC4: Codigo da Filial                                     ³±±
+±±³          ³ExpL5: Se posiciona o Recno                                 ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function EntExisteRel( cEntidade , cChaveEntidade , cEmp , cFil , lPosicione )
+         
+Local cKeyRel
+Local nRd0SvOrd
+Local nRDZsvOrd
+
+Local lExisteRel
+
+DEFAULT cEmp		:= cEmpAnt
+DEFAULT cFil		:= cFilAnt
+DEFAULT lPosicione	:= .T.
+
+cFil		:= xFilial( cEntidade , cFil )
+nRDZsvOrd	:= RDZ->( IndexOrd() )
+RDZ->( dbSetOrder( RetOrdem( "RDZ" , "RDZ_FILIAL+RDZ_EMPENT+RDZ_FILENT+RDZ_ENTIDA+RDZ_CODENT+RDZ_CODRD0" ) ) )
+cKeyRel	:= ( xFilial("RDZ") + cEmp + cFil + cEntidade + cChaveEntidade )
+IF ( lExisteRel := RDZ->( MsSeek( cKeyRel , .F. ) ) )
+	IF ( lPosicione )
+		nRd0SvOrd := RD0->( IndexOrd() )
+		RD0->( dbSetOrder( RetOrdem( "RD0" , "RD0_FILIAL+RD0_CODIGO" ) ) )
+		RD0->( MsSeek( xFilial( "RD0" , cFil ) + RDZ->RDZ_CODRD0 , .F. ) )
+		RD0->( dbSetOrder( nRd0SvOrd ) )
+	EndIF
+EndIF
+RDZ->( dbSetOrder( nRDZsvOrd ) )
+
+Return( lExisteRel )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³UndoRelRdz   ³Autor³Marinaldo de Jesus    ³ Data ³03/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Desfaz Relacionamento no RDZ                                ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Codigo do RD0                                        ³±±
+±±³          ³ExpC3: Codigo da Empresa                                    ³±±
+±±³          ³ExpC4: Codigo da Filial                                     ³±±
+±±³          ³ExpL5: Posicionar ou Nao                                    ³±±
+±±³          ³ExpC6: Mensagem de Erro                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: lUnDoOk                                              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function UndoRelRdz( cEntidade , cRd0Codigo , cEmp , cFil , lPosicione , cMsgErr )
+
+Local lUnDoOk		:= .T.
+Local lRetFunc 		:= IsInCallStack("PMA050GRV") 
+
+DEFAULT cEmp		:= cEmpAnt
+DEFAULT cFil		:= cFilAnt
+DEFAULT lPosicione	:= .T.
+
+Begin Sequence
+
+	cFil := xFilial( cEntidade , cFil )
+
+	IF ( lPosicione )
+		IF !( lUnDoOk := RdzExisteRel( cEntidade , cRd0Codigo , cEmp , cFil , .T. ) )
+			Break
+		EndIF
+	EndIF
+
+	IF !( lUnDoOk := ( RDZ->( RecLock( "RDZ" , .F. ) ) ) )
+		Break
+	EndIF
+
+	If (lRetFunc .And. Empty(M->AE8_CODFUNC)) .Or. !lRetFunc
+		IF !( lUnDoOk := RDZ->( FkDelete( @cMsgErr ) ) )
+			RDZ->( RollBackDelTran( cMsgErr ) )
+		EndIF
+	EndIf
+	
+	RDZ->( MsUnLock() )
+	
+End Sequence
+
+Return( lUnDoOk )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³EntGetInfo   ³Autor³Marinaldo de Jesus    ³ Data ³11/08/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Obtem Informacoes de campos de Entidade Relacionadas com   o³±±
+±±³          ³RD0 atraves do RDZ										  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ExpC1: Codigo da Entidade                                   ³±±
+±±³          ³ExpC2: Nome do Campo                                        ³±±
+±±³          ³ExpC3: Codigo do RD0                                        ³±±
+±±³          ³ExpC4: Codigo da Empresa                                    ³±±
+±±³          ³ExpC5: Codigo da Filial                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpU1: Conteudo do Campo conforme ExpC2                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±/*/
+Function EntGetInfo( cEntidade , uCpoGetInfo , cRd0Codigo , cEmp , cFil )
+
+Local cSx3Tipo
+Local cCpoGetInfo
+Local lCpoIsArray
+Local nEntOrder
+Local nEntSvOrder
+Local nField
+Local nFields
+Local nFieldPos
+Local uReturn
+
+DEFAULT uCpoGetInfo	:= StrToArray( GetRdzKeyRel( cEntidade ) , "+" )
+DEFAULT cRd0Codigo	:= RD0->RD0_CODIGO
+DEFAULT cEmp		:= cEmpAnt
+DEFAULT cFil		:= cFilAnt
+
+IF ( lCpoIsArray := ( ValType( uCpoGetInfo ) == "A" ) )
+	uReturn := Array( ( nFields := Len( uCpoGetInfo ) ) )
+Else
+	cCpoGetInfo := uCpoGetInfo
+EndIF
+
+IF RdzExisteRel( cEntidade , cRd0Codigo , cEmp , cFil , .T. )
+	nEntSvOrder	:= ( cEntidade )->( IndexOrd() )
+	nEntOrder	:= GetRdzIndRel( cEntidade )
+	IF ( nEntOrder == 0 )
+		nEntOrder := ( cEntidade )->( Val( RDZ->RDZ_ENTIND ) )
+	EndIF
+ 	( cEntidade )->( dbSetOrder( nEntOrder ) )
+ 	IF ( cEntidade )->( MsSeek( RDZ->RDZ_CODENT , .F. ) )
+ 	  	IF !( lCpoIsArray )
+ 	  		cSx3Tipo := GetSx3Cache( Upper( AllTrim( cCpoGetInfo ) ) , "X3_TIPO" )
+ 	  		IF ( cSx3Tipo <> NIL )
+ 	  			IF ( ( nFieldPos := ( cEntidade )->( FieldPos( cCpoGetInfo ) ) ) > 0 )
+ 	  				uReturn := ( cEntidade )->( FieldGet( nFieldPos ) )
+ 	  			Else
+					uReturn := CriaVar( cCpoGetInfo , .T. , NIL , .F. )
+				EndIF
+ 	  		EndIF
+ 		Else
+			For nField := 1 To nFields
+				cCpoGetInfo		 := uCpoGetInfo[ nField ]
+				cSx3Tipo		 := GetSx3Cache( Upper( AllTrim( cCpoGetInfo ) ) , "X3_TIPO" )
+				IF ( cSx3Tipo <> NIL )
+ 	  				IF ( ( nFieldPos := ( cEntidade )->( FieldPos( cCpoGetInfo ) ) ) > 0 )
+ 	  					uReturn[ nField ] := ( cEntidade )->( FieldGet( nFieldPos ) )
+ 	  				Else
+						uReturn[ nField ] := CriaVar( cCpoGetInfo , .T. , NIL , .F. )
+					EndIF
+				EndIF
+			Next nField
+ 		EndIF
+ 	EndIF
+ 	( cEntidade )->( dbSetOrder( nEntSvOrder ) )
+Else
+	IF !( lCpoIsArray )
+		cSx3Tipo := GetSx3Cache( Upper( AllTrim( cCpoGetInfo ) ) , "X3_TIPO" )
+		IF ( cSx3Tipo <> NIL )
+			uReturn	 := CriaVar( cCpoGetInfo , .F. , NIL , .F. )
+		EndIF	
+	Else
+		For nField := 1 To nFields
+			cCpoGetInfo		 := uCpoGetInfo[ nField ]
+			cSx3Tipo		 := GetSx3Cache( Upper( AllTrim( cCpoGetInfo ) ) , "X3_TIPO" )
+			IF ( cSx3Tipo <> NIL )
+				uReturn[ nField ] := CriaVar( cCpoGetInfo , .F. , NIL , .F. )
+			EndIF	
+		Next nField
+	EndIF
+EndIF
+
+Return( uReturn )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³EqualFullName³Autor³Marinaldo de Jesus    ³ Data ³06/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se a Tabela e Compartilhada entre empresas         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function EqualFullName( cAlias , c1aEmp , c2aEmp )
+Return( ( RetFullName( cAlias , c1aEmp ) == RetFullName( cAlias , c2aEmp ) ) )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³EmpChangeTable³Autor³Marinaldo de Jesus   ³ Data ³06/02/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Abre Tabelas de Outra empresa com o Mesmo alias             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ExpL1: .T.                                                  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function EmpChangeTable( cAlias , cNewEmp , cAtuEmp , nOrder )
+
+Local lChange	:= .T.
+
+Local cModo
+Local nAT
+
+Begin Sequence
+
+	IF !( lChange := !( EqualFullName( cAlias , cNewEmp , cAtuEmp ) ) )
+		Break
+	EndIF
+
+	IF ( lChange := ( cNewEmp == cAtuEmp ) )
+		Break
+	EndIF
+	
+	IF !( lChange := EmpOpenFile( cAlias , cAlias , nOrder , .T. , cNewEmp , @cModo ) )
+		Break
+	EndIF
+
+	nAT := AT( cAlias , cArqTab )
+	IF ( nAT > 0 )
+		cArqTab := ( SubStr( cArqTab , 1 , nAT+2 ) + cModo + SubStr( cArqTab , nAT + 4 ) )
+	Else
+		cArqTab += ( cAlias+cModo+"/" )
+	EndIF
+
+End Sequence
+
+Return( lChange )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³Sx3Box2Arr	³Autor³Marinaldo de Jesus   ³ Data ³18/08/2004³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Retorna Array com as Opcoes do X3_CBOX					  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³Array com as Opcoes do X3_CBOX					    	  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function Sx3Box2Arr( cCpo , aX3cBox )
+
+Local aSx3BoxArr	:= {}
+
+Local aSx3Info
+Local nLoop
+Local nLoops
+
+aSx3Info := PosAlias( "SX3" , cCpo , NIL , { "X3cBox()" , "X3_TAMANHO" } , 2 , .F. )
+
+IF !Empty( aSx3Info[1] )
+	aX3cBox := RetSx3Box( aSx3Info[1] , NIL , NIL , aSx3Info[2] )
+Else
+	aX3cBox := {}
+EndIF
+
+nLoops		:= Len( aX3cBox )
+aSx3BoxArr	:= Array( nLoops )
+For nLoop := 1 To nLoops
+	aSx3BoxArr[ nLoop ] := aX3cBox[ nLoop , 1 ]
+Next nLoop
+
+Return( aSx3BoxArr )
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³RetRDZSeek	³Autor³Bruno / Janotas      ³ Data ³17/06/2008³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³Verifica se existe relacao,caso exista verifica as entidades³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³                                                            ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³Registro relacionado								    	  ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Uso       ³Generico                                                    ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß/*/
+Function RetRDZSeek( cRd0Codigo, cEmp, cFil, cEntidade, lSeekRel )
+
+Local lRetSeek		:= .F.
+
+DEFAULT lSeekRel	:= .F.
+
+//Chave de pesquisa padrao
+cKeyRel	:= ( xFilial("RDZ") + cRd0Codigo + cEmp + cFil + cEntidade )
+
+If lSeekRel
+	
+	cKeyRel	:= ( xFilial("RDZ") + cRd0Codigo + cEmp )
+	RDZ->( MsSeek( cKeyRel , .F. ) )
+	
+	While !RDZ->(Eof()) .And. RDZ->(RDZ_FILIAL+RDZ_CODRD0+RDZ_EMPENT) == cKeyRel
+		
+		If cEntidade == RDZ->RDZ_ENTIDA
+			lRetSeek := .T.
+			Exit
+		EndIf
+		
+		RDZ->(dbSkip())
+	EndDo
+Else
+	
+	If RDZ->( MsSeek( cKeyRel , .F. ) )
+		lRetSeek := .T.
+	EndIf
+EndIf
+
+Return(lRetSeek)
+
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÉÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍËÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÍ»±±
+±±ºRotina    ³Modulo10  ºAutor  ³Mauricio Pequim Jr  º Data ³  18/02/13   º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÊÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºDesc.     ³Calcula o digito verificador de uma sequencia de numeros    º±±
+±±º          ³baseando-se no modulo 10. Utilizado para verificar o digito º±±
+±±º          ³em linhas digitaveis e codigo de barras de concessionarias  º±±
+±±º          ³de servicos publicos                                        º±±
+±±ÌÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¹±±
+±±ºUso       ³ CodBarVl2                                                  º±±
+±±ÈÍÍÍÍÍÍÍÍÍÍÏÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+Function Modulo10( cNum )
+
+Local cRet := ""
+
+cRet :=Mod10(cNum)
+
+Return cRet

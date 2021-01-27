@@ -1,0 +1,420 @@
+#INCLUDE "DBTREE.CH"
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "CNTC010.CH"
+#DEFINE  CCADASTRO STR0001
+
+/*/
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Program   ³CNTC010   ³ Autor ³ Sergio Silveira       ³ Data ³27/09/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Rastreador de contratos                                    ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±       
+±±³Retorno   ³ Nenhum                                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ ExpA1 -> Array opcional para pesquisa de item              ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+/*/
+
+Function CNTC010( aMens )
+
+Local aArea	   := GetArea()
+Local aPosObj  := {} 
+Local aObjects := {}                        
+Local aSize    := MsAdvSize( .F. ) 
+
+Local nLinIni  := 0 
+Local nRight   := 0 
+
+Local oDlg
+Local oSay
+Local oTimer
+Local oMenu
+                       
+Local oTree
+
+lPergunte := If( Valtype( aMens ) == "A", .T., Pergunte( "CNC010", .T., STR0024 ) ) // "Parametros de filtro - Rastreador de contratos"
+
+If lPergunte // "Parametros de filtro - Rastreador de contratos"  
+
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	//³Constroi a Janela da Consulta                                           ³
+	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	
+	aObjects := {} 
+	AAdd( aObjects, { 100, 100, .t., .t. } )
+	AAdd( aObjects, {  50, 100, .f., .t. } )
+	
+	aInfo := { aSize[ 1 ], aSize[ 2 ], aSize[ 3 ], aSize[ 4 ], 4, 4 } 
+	aPosObj := MsObjSize( aInfo, aObjects, , .t. ) 
+	
+	DEFINE MSDIALOG oDlg FROM	aSize[7],00 TO aSize[6],aSize[5] TITLE CCADASTRO OF oMainWnd PIXEL
+	oTree := DbTree():New(aPosObj[1,1],aPosObj[1,2],aPosObj[1,3],aPosObj[1,4], oDlg,,,.T.)
+	oTree:lShowHint := .F. 
+	
+	oTree:bRClicked := { || MaPrepView(oTree) } 
+	
+	oTimer:= TTimer():New( Val( GetNewPar("MV_CNTTEMP","5") ) *60*1000,{||CTC010proc(oTimer,oTree,oDlg,oSay,,aMens)},oDlg)
+	                               
+	nLinIni := aPosObj[2,1] 
+	nRight  := aPosObj[2,2] + 5
+	
+	@ aPosObj[2,1],aPosObj[2,2] TO aPosObj[2,3],aPosObj[2,4] OF oDlg PIXEL	 //"Mensagem"
+	
+	@ nLinIni +  8, nRight BUTTON OemToAnsi(STR0002) SIZE 040,012 FONT oDlg:oFont ACTION CTC010Param(oTimer,oTree,oDlg,oSay) OF oDlg PIXEL //"Parametros"
+	@ nLinIni + 23, nRight BUTTON OemToAnsi(STR0003) SIZE 040,012 FONT oDlg:oFont ACTION MaPrepView(oTree)	OF oDlg PIXEL //"Visualizar"
+	@ nLinIni + 38, nRight BUTTON OemToAnsi(STR0004) SIZE 040,012 FONT oDlg:oFont ACTION CTC010Pesq(oTree)	OF oDlg PIXEL //"Pesquisar"
+	
+	MENU oMenu POPUP 
+		MENUITEM STR0002 Action CTC010Param(oTimer,oTree,oDlg,oSay)  
+		MENUITEM STR0003 Action MaPrepView(oTree)	                    
+		MENUITEM STR0004 Action CTC010Pesq(oTree)              
+	ENDMENU
+
+	oTree:bRClicked   := { |oObject,nx,ny| oMenu:Activate( nX, nY - 145, oObject ) }
+	
+	DEFINE SBUTTON FROM aPosObj[2,3] - 20, nRight+5 TYPE 1 ENABLE OF oDlg ACTION ( oDlg:End() )
+	          
+	CTC010proc(oTimer,oTree,oDlg,oSay, .T., aMens )
+	
+	ACTIVATE MSDIALOG oDlg 
+
+EndIf
+	
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³Restaura a situacao de entrada                                          ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+RestArea( aArea ) 
+
+Return(Nil)
+                                               
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³CTC010Proc³ Autor ³ Sergio Silveira       ³ Data ³06/10/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Constroi a regua de processamento                          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ Nenhum                                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ oTimer : Objeto Timer                                      ³±±
+±±³          ³ oTree  : Objeto Tree                                       ³±±
+±±³          ³ oDlg	  : Objeto da Janela                                 ³±±
+±±³          ³ oSay	  : Objeto do Say                                    ³±±
+±±³          ³ aMens  : Contem parametros para chamada sem Pergunte       ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+Function CTC010Proc(oTimer,oTree,oDlg,oSay,lOk,aMens)
+Default aMens := {}
+Default lOk   := .T.
+Processa({||CTC010Reca(oTimer,oTree,oDlg,oSay,aMens)})
+                                            
+Return( .T. ) 
+
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³CTC010Reca³ Autor ³ Sergio Silveira       ³ Data ³27/09/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Recalcula os sinalizadores do Tree                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ Nenhum                                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ oTimer : Objeto Timer                                      ³±±
+±±³          ³ oTree  : Objeto Tree                                       ³±±
+±±³          ³ oDlg	  : Objeto da Janela                                 ³±±
+±±³          ³ oSay	  : Objeto do Say                                    ³±±
+±±³          ³ aMens  : Contem parametros para chamada sem Pergunte       ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+Static Function CTC010Reca(oTimer,oTree,oDlg,oSay,aMens)
+
+LOCAL cQuery   := ""  
+LOCAL cAliasQry:= "" 
+LOCAL nLevel   := 0 
+LOCAL nTamFor	 := TamSx3("CNC_CODIGO")[1]   
+LOCAL cFilCtr	 := cFilAnt
+Private aTitulos := {}
+
+/* 
+
+Parametros 
+
+MV_PAR01 - Numero de
+MV_PAR02 - Numero ate 
+MV_PAR03 - Tipo de contrato de 
+MV_PAR04 - Tipo de contrato ate 
+MV_PAR05 - Situacao de 
+MV_PAR06 - Situacao ate 
+MV_PAR07 - Fornecedor de 
+MV_PAR08 - Fornecedor ate 
+MV_PAR09 - Loja de 
+MV_PAR10 - Loja ate 
+MV_PAR11 - Produto de 
+MV_PAR12 - Produto ate 
+
+*/         
+                          
+oTimer:DeActivate() 
+	        
+oTree:BeginUpdate()	
+oTree:Reset()      
+oTree:EndUpdate()
+
+oTree:BeginUpdate()
+   
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Cria a arvore dos contratos                                            ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+cAliasQry := GetNextAlias()
+	        
+cQuery := ""
+cQuery += "SELECT CN9.R_E_C_N_O_ CN9RECNO FROM "+RetSqlName("CN9")+" CN9,"
+cQuery += RetSqlName("CNC") + " CNC,"       	
+cQuery += RetSqlName("CN1") + " CN1 "
+cQuery += "LEFT JOIN " 
+cQuery += RetSqlName("CNB") + " CNB ON"
+If !Empty(aMens)
+	cQuery += "	CNB_FILIAL='"  + xFilial( "CNB",aMens[1,6] ) + "' AND "
+Else
+	cQuery += "	CNB_FILIAL='"  + xFilial( "CNB" ) + "' AND "
+Endif  
+cQuery += "	CNB.D_E_L_E_T_=' ' "	      
+cQuery += "WHERE "                           
+
+If !Empty(aMens)
+	cQuery += "CN9_NUMERO='"  + aMens[1,2]		   + "' AND "
+	cQuery += "CN9_FILIAL='"  + xFilial( "CN9",aMens[1,6] )	   + "' AND "
+Else
+	cQuery += "CN9_FILIAL='"  + xFilial('CN9')   + "' AND "
+	cQuery += "CN9_NUMERO>='" + MV_PAR01         + "' AND "
+	cQuery += "CN9_NUMERO<='" + MV_PAR02         + "' AND "	
+	cQuery += "CN9_TPCTO>='"  + MV_PAR03         + "' AND "
+	cQuery += "CN9_TPCTO<='"  + MV_PAR04         + "' AND "
+	cQuery += "CN9_SITUAC>='" + MV_PAR05         + "' AND "
+	cQuery += "CN9_SITUAC<='" + MV_PAR06         + "' AND "
+EndIf
+
+cQuery += "CN9_REVATU='"  + Space( Len( CN9->CN9_REVATU ) ) + "' AND "
+cQuery += "CN9.D_E_L_E_T_=' ' "
+
+If !Empty(aMens) .Or. (MV_PAR07 != Space(nTamFor)) .Or. (Upper(MV_PAR08) != Replicate("Z",nTamFor)) 
+	cQuery += "AND CN9_NUMERO=CNC_NUMERO AND "
+
+	If !Empty(aMens)
+		cQuery += "CNC_FILIAL='"  + xFilial( "CNC",aMens[1,6] ) + "' AND "
+	Else
+		cQuery += "CNC_FILIAL='"  + xFilial( "CNC" ) + "' AND "
+		cQuery += "CNC_CODIGO>='" + MV_PAR07         + "' AND "
+		cQuery += "CNC_CODIGO<='" + MV_PAR08         + "' AND "
+		cQuery += "CNC_LOJA>='"   + MV_PAR09         + "' AND "
+		cQuery += "CNC_LOJA<='"   + MV_PAR10         + "' AND "
+	EndIf
+	
+	cQuery += "CNC.D_E_L_E_T_=' ' "
+EndIf
+
+cQuery += "AND CN9_TPCTO = CN1_CODIGO AND "
+
+If !Empty(aMens)
+	cQuery += "CN1_FILIAL='"  + xFilial( "CN1",aMens[1,6]) + "' AND "  
+Else
+	cQuery += "CN1_FILIAL='"  + xFilial( "CN1" ) + "' AND "  
+EndIf
+cQuery += "((CN1_CTRFIX='1' AND "
+cQuery += "  CN9_NUMERO=CNB_CONTRA AND "				
+cQuery += "  CN9_REVISA=CNB_REVISA AND "
+If !Empty(aMens)					
+	cQuery += "  CNB_FILIAL='"  + xFilial( "CNB",aMens[1,6] ) + "' AND "
+Else
+	cQuery += "  CNB_FILIAL='"  + xFilial( "CNB" ) + "' AND "
+	cQuery += "  CNB_PRODUT>='" + MV_PAR11         + "' AND "
+	cQuery += "  CNB_PRODUT<='" + MV_PAR12         + "' AND "
+EndIf
+cQuery += "  CNB.D_E_L_E_T_=' ') OR CN1_CTRFIX='2') AND "
+ 
+cQuery += "CN1.D_E_L_E_T_=' ' "
+
+cQuery += "GROUP BY CN9.R_E_C_N_O_ "  
+
+cQuery := ChangeQuery( cQuery ) 
+
+dbUseArea( .T., "TOPCONN", TcGenQry( ,, cQuery ), cAliasQry, .F., .T. ) 
+
+If Alias() == cAliasQry 
+	TcSetField( cAliasQry, "CN9RECNO", "N", 10, 0 ) 
+	While !( cAliasQry )->( Eof() ) 
+		CN9->( dbGoto( ( cAliasQry )->CN9RECNO ) ) 
+		
+		cFilCTR:= CN9->CN9_FILCTR
+
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³ Rastro estrutura header                                                ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		MaTrkCN9H( CN9->CN9_NUMERO + CN9->CN9_REVISAO, oTree, STR0005 + CN9->CN9_NUMERO, @nLevel, NIL,.F.,NIL,NIL, cFilCTR) // "Contratos - "  
+
+		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+		//³ Rastro estrutura item                                                  ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		MaTrkCN9( CN9->CN9_NUMERO + CN9->CN9_REVISAO, oTree, STR0005 + CN9->CN9_NUMERO, @nLevel, NIL,.F.,NIL,NIL, cFilCTR) // "Contratos - "  
+		
+	 	oTree:TreeSeek( "" ) 
+	 	oTree:CurrentNodeId := ""
+		( cAliasQry )->( dbSkip() ) 
+	EndDo     
+	( cAliasQry )->( dbCloseArea() ) 
+	dbSelectArea( "CN9" ) 
+EndIf 			
+
+                                            
+//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+//³ Encerra a montagem do tree                                             ³
+//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+oTree:EndUpdate()   
+
+oTimer:Activate() 
+	
+Return( .T. ) 
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³CTC010Pesq³ Autor ³ Sergio Silveira       ³ Data ³27/09/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Pesquisa por entidades no Tree                             ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ Nenhum                                                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ oTree: Objeto Tree                                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                         ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³          ³               ³                                            ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+Function CTC010Pesq( oTree )                                                       
+
+LOCAL aItems     := {} 
+LOCAL aSeek      := {} 
+
+LOCAL cChavePesq := Space( 20 )        
+LOCAL cChave     := Space( 20 )        		
+LOCAL cVar       := ""
+
+LOCAL nCombo     := 1 
+LOCAL nOpca      := 0 
+
+LOCAL oCombo          
+LOCAL oDlg   
+LOCAL oBut1 
+LOCAL oBut2 
+LOCAL oGetPesq 
+
+AAdd( aItems, STR0006 ) // "Contrato"
+AAdd( aItems, STR0007 ) // "Planilha"
+AAdd( aItems, STR0008 ) // "Medicao"
+AAdd( aItems, STR0009 ) // "Pedido de compra"
+AAdd( aItems, STR0010 ) // "Nota fiscal de entrada"
+AAdd( aItems, STR0011 ) // "Titulo a pagar"
+
+AAdd( aSeek, { "CN9", 1, "@R XXXXXXXXXXXXXXX"                  , STR0012, 15 } )  // "Numero" 
+AAdd( aSeek, { "CNA", 1, "@R XXXXXXXXXXXXXXX/XXX/XXXXXX"       , STR0013, 24 } ) // "Contrato + Revisao + Planilha"
+AAdd( aSeek, { "CND", 1, "@R XXXXXXXXXXXXXXX/XXX/XXXXXX/XXXXXX", STR0014, 30 } ) // "Contrato + Revisao + Planilha + Medicao"
+AAdd( aSeek, { "SC7", 1, "@R XXXXXX", STR0012, 6 } )  // "Numero"
+AAdd( aSeek, { "SF1", 1, "@R " + Replicate("X",Len(SF1->F1_DOC))+"/"+ Replicate("X",Len(SF1->F1_SERIE))+;
+				"/"+ Replicate("X",Len(SF1->F1_FORNECE))+"/"+ Replicate("X",Len(SF1->F1_LOJA)), STR0015, Len(SF1->F1_DOC)+Len(SF1->F1_SERIE)+Len(SF1->F1_FORNECE)+Len(SF1->F1_LOJA) } ) // "Documento + Serie + Fornecedor + Loja"
+AAdd( aSeek, { "SE2", 1, "@R " + Replicate("X",Len(SE2->E2_FORNECE))+"/"+ Replicate("X",Len(SE2->E2_LOJA))+;
+				"/"+ Replicate("X",Len(SE2->E2_PREFIXO))+"/"+ Replicate("X",Len(SE2->E2_NUM)) + "/" + Replicate("X",Len(SE2->E2_PARCELA) ), STR0016, Len(SE2->E2_FORNECE)+Len(SE2->E2_LOJA)+Len(SE2->E2_PREFIXO)+Len(SE2->E2_NUM)+Len(SE2->E2_PARCELA) } ) // "Fornecedor + Loja + Prefixo + Numero + Parcela"
+
+
+DEFINE MSDIALOG oDlg TITLE CCADASTRO FROM 09,0 TO 21.2,60 OF oMainWnd
+
+DEFINE FONT oBold NAME "Arial" SIZE 0, -13 BOLD
+@   0, 0 BITMAP oBmp RESNAME "LOGIN" oF oDlg SIZE 30, 120 NOBORDER WHEN .F. PIXEL
+
+@ 03, 40 SAY STR0017 FONT oBold PIXEL // "Pesquisar entidade"
+
+@ 14, 40 TO 16 ,400 LABEL '' OF oDlg   PIXEL
+
+@ 23, 40 SAY STR0018 SIZE 40, 09 PIXEL // "Entidade"
+@ 23, 80 COMBOBOX oCombo VAR cVar ITEMS aItems SIZE 80, 10 OF oDlg PIXEL 
+
+oCombo:bChange := { || cChavePesq := Space( aSeek[ oCombo:nAt, 5 ] ),oGetPesq:oGet:Picture := aSeek[ oCombo:nAt, 3 ], oGetPesq:Refresh(), cChave := aSeek[ oCombo:nAt, 4 ], oGetPesq1:Refresh() }  
+                                                      
+@ 35, 40 SAY STR0019 SIZE 40, 09    PIXEL // "Chave "
+@ 35, 80 MSGET oGetPesq1 VAR cChave WHEN .F. SIZE 150, 10 VALID .T. PIXEL 
+
+@ 48, 40 SAY STR0020 SIZE 40, 09    PIXEL // "Pesquisa "
+@ 48, 80 MSGET oGetPesq VAR cChavePesq SIZE 150, 10 VALID .T. PIXEL 
+
+DEFINE SBUTTON oBut1 FROM 67, 167  TYPE 1 ACTION ( nOpca := 1, nCombo := oCombo:nAt,;
+		oDlg:End() ) ENABLE of oDlg
+
+DEFINE SBUTTON oBut2 FROM 67, 200   TYPE 2 ACTION ( nOpca := 0,;
+		oDlg:End() ) ENABLE of oDlg
+
+ACTIVATE MSDIALOG oDlg CENTERED  
+ 
+If nOpca == 1
+	cChavePesq := RTRIM( cChavePesq ) 
+	If !oTree:TreeSeek( aSeek[ nCombo, 1 ] + "-" + cChavePesq ) 
+		Aviso( STR0021, STR0022, { STR0023 }, 2 ) // "Atencao !", "Entidade nao encontrada !","Ok" 
+	EndIf 
+EndIf 
+
+Return( .T. ) 
+
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±ÚÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄ¿±±
+±±³Funcao    ³CTC010Param³ Autor ³ Sergio Silveira       ³ Data ³06/10/2000³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Descri‡…o ³ Altera os parametros e redesenha o tree                     ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Retorno   ³ Nenhum                                                      ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³Parametros³ oTree: Objeto Tree                                          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³   DATA   ³ Programador   ³Manutencao Efetuada                          ³±±
+±±ÃÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´±±
+±±³          ³               ³                                             ³±±
+±±ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+*/
+
+Function CTC010Param(oTimer,oTree,oDlg,oSay)
+
+If Pergunte( "CNC010", .T., STR0024 ) // "Parametros de filtro - Rastreador de contratos"   
+	CTC010proc(oTimer,oTree,oDlg,oSay)  
+EndIf 
+
+Return( .T. )                
+

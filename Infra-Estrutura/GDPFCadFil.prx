@@ -1,0 +1,32 @@
+#Include 'Protheus.ch'
+#INCLUDE "FWMVCDEF.CH"
+//-------------------------------------------------------------------
+/*/{Protheus.doc} GPECadFilEvent
+Fonte de instalação de eventos no cadatros de empresas
+@param oModel - Modelo definido pela FwCadFilial que deverá ser usado para instalar o evento
+@return Nil
+@obs A criação e instalação do evento é útil para toda GDP que precisa realizar alguma ação após a manutenção
+do cadastro de empresas, como por exemplo o envio de informações para o eSocial. 
+O evento de cada GDP deverá ser desenvolvivo em classes separadas(em fontes separados) que extendam a classe FWModelEvent.
+Depois de desenvolvida a classe, um objeto deve ser instanciado e instalado no oModel que vem como parâmetro
+@sample
+@author Vinicius Ledesma
+@since 04/11/2016
+@version P12
+/*/
+//-------------------------------------------------------------------
+
+Function GDPFCadFil(oModel)
+
+	//Inclusão de criação de objeto, para uso do Módulo do RH, para envio dos dados para o TAF
+	//ISSUE:DRHESOCP-825 - Ajustado por Eduardo
+	Local oGPEEvent	:= NIL
+	Local lIntegTAF	:= If(cPaisLoc == 'BRA' ,SuperGetMv("MV_RHTAF",nil,.F.), .F.) ////Integracao com TAF	
+	If FindFunction("fIntExt005")
+		If lIntegTAF 
+			oGPEEvent	:=GPECadFilEvent():New()
+			oModel:InstallEvent("GPECadFilEvent", /*cOwner*/, oGPEEvent)
+		EndIf
+	EndIf
+	
+Return .T.

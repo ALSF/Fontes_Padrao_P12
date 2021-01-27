@@ -1,0 +1,837 @@
+#Include "Protheus.ch"
+#Include "FWMVCDEF.CH"
+#Include "GCTXDEF.CH"
+#Include "CNTMNAT.CH"
+
+//******************************************************************************************************************************
+//********************************************************* PRE  VALID *********************************************************
+//******************************************************************************************************************************
+//==============================================================================================================================
+/*/{Protheus.doc} MNatPreCXO()
+Função responsável pela pós validação do modelo CXO
+@Param	
+@author Israel.Escorizza 
+@since 	08/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function MNatPreCXO(cModelId,oModelGrid,nLine,cAction,cField,xValue,xOldValue)
+Local aArea			:= GetArea()
+Local aSaveLines	:= FWSaveRows()
+
+Local oModel 		:= Nil
+Local oModelCNA 	:= Nil
+
+Local lRet			:= .T.
+
+Default cModelId	:= ""
+
+DO 	CASE
+	CASE cModelId == 'CNTA300'
+		oModel 		:= oModelGrid:GetModel()
+		oModelCNA 	:= oModel:GetModel('CNADETAIL')
+		
+		DO 	CASE
+			CASE cAction == 'CANSETVALUE'
+				 DO	CASE
+				 	//- Bloqueio da edição da grid CXO caso não exista tipo de planilha
+				 	CASE Empty(oModelCNA:GetValue('CNA_TIPPLA')) 
+				 		 lRet := .F.	
+				 		 
+				 	//- Bloqueio da edição do campo CXO_VALOR caso valor da planilha seja zero
+				 	CASE cField == 'CXO_VALOR' .And. (oModelCNA:GetValue('CNA_VLTOT') == 0 .Or. !MNatVlItT())
+				 		 lRet := .F.	
+			 END DO
+		END DO
+END DO
+
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return lRet
+
+
+//==============================================================================================================================
+/*/{Protheus.doc} MNatPreCXP()
+Função responsável pela pós validação do modelo CXP
+@Param	
+@author Israel.Escorizza 
+@since 	08/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function MNatPreCXP(cModelId,oModelGrid,nLine,cAction,cField,xValue,xOldValue)
+Local aArea			:= GetArea()
+Local aSaveLines	:= FWSaveRows()
+
+Local oModel 		:= Nil
+Local oModelCNA 	:= Nil
+Local oModelCXO		:= Nil
+
+Local lRet			:= .T.
+
+Default cModelId	:= ""
+
+DO 	CASE
+	CASE cModelId == 'CNTA300'
+		oModel 		:= oModelGrid:GetModel()
+		oModelCNA 	:= oModel:GetModel('CNADETAIL')
+		oModelCXO	:= oModel:GetModel('CXODETAIL')
+		
+		DO 	CASE
+			CASE cAction == 'CANSETVALUE'
+				 DO	CASE
+				 	//- Bloqueio da edição da grid CXP caso não exista tipo de planilha ou natureza informada
+				 	CASE Empty(oModelCNA:GetValue('CNA_TIPPLA')) .Or. Empty(oModelCXO:GetValue('CXO_NATURE'))
+				 		 lRet := .F.	
+				 		 
+				 	//- Bloqueio da edição do campo CXP_VALOR caso valor da natureza seja zero
+				 	CASE cField == 'CXP_VALOR' .And. (oModelCXO:GetValue('CXO_VALOR') == 0 .Or. !MNatVlItT())
+				 		 lRet := .F.	
+				 END DO
+		END DO
+END DO
+
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return lRet
+
+
+//******************************************************************************************************************************
+//********************************************************* POS  VALID *********************************************************
+//******************************************************************************************************************************
+//==============================================================================================================================
+/*/{Protheus.doc} CnMNPosMd(oModelCXO,oModelCXP)
+Função responsável pela pós validação do modelo para gravação
+@Param	oModelCXO	- Modelo da grid CXO
+		oModelCXP	- Modelo da grid CXP
+		
+@author Israel.Escorizza 
+@since 	07/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function CnMNPosMd(oModelPlan,oModelCXO,oModelCXP)
+Local lRet 	:= .T.
+Local nX	:= 1
+Local nY	:= 1
+
+While lRet .And. nX <= oModelPlan:Length()
+	oModelPlan:GoLine(nX)
+	
+	nY := 1
+	While lRet .And. nY <= oModelCXO:Length()
+	 	oModelCXO:GoLine(nY)
+	 	lRet := MNatPosCXP(.F.,oModelCXP)
+	 	nY++
+	End
+	
+	lRet := lRet .And. MNatPosCXO(.F.,oModelCXO)
+	nX++
+End
+
+Return lRet
+//==============================================================================================================================
+/*/{Protheus.doc} MNatPosCXO()
+Função responsável pela pós validação do modelo CXO
+@Param	oModelCXO	- Modelo da grid
+		lVldLine	- Informa se é validação da linha
+		nPerc		- Valor do percentual caso seja validação de linha
+		
+@author Israel.Escorizza 
+@since 	07/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function MNatPosCXO(lVldLine,oModelCXO,nPerc,nLine)
+Local aArea			:= GetArea()
+Local aSaveLines	:= FWSaveRows()
+Local lRet			:= .T.	//- Retorno da função
+Local lRat			:= .F.	//- Controle se existe rateio
+Local nPerc			:= 0
+Local nX			:= 0
+
+Default oModelCXO  	:= ""
+Default lVldLine	:= .F.
+Default nPerc		:= 0
+Default nLine		:= 0
+
+If 	!Empty(oModelCXO)
+	For nX := 1 to oModelCXO:Length()
+		oModelCXO:GoLine(nX)
+		If !oModelCXO:IsDeleted() .And. !Empty(oModelCXO:GetValue("CXO_PERC"))
+			If nX != nLine
+				nPerc += oModelCXO:GetValue("CXO_PERC")
+			EndIf
+			lRat := .T.
+	  	EndIf
+	Next nX
+	
+	If lRat .And. ((lVldLine .And. nPerc > 100) .Or. (!lVldLine .And. nPerc <> 100))
+		Help(" ",1,"CNMNATNPER") //-- A somatória dos percentuais das múltiplas naturezas diferem de 100%.
+		lRet := .F.
+	EndIf
+EndIf
+
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} MNatPosCXP()
+Função responsável pela pós validação do modelo CXP
+@Param	oModelCXP	- Modelo da grid
+		lVldLine	- Informa se é validação da linha
+		nPerc		- Valor do percentual caso seja validação de linha
+		
+@author Israel.Escorizza 
+@since 	07/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function MNatPosCXP(lVldLine,oModelCXP,nPerc,nLine)
+Local aArea			:= GetArea()
+Local aSaveLines	:= FWSaveRows()
+
+Local lRet			:= .T.	//- Retorno da função
+Local lRat			:= .F.	//- Controle se existe rateio
+Local nPerc			:= 0
+Local nX			:= 0
+
+Default oModelCXP	:= ""
+Default lVldLine	:= .F.
+Default nPerc		:= 0
+Default nLine		:= 0
+
+If 	!Empty(oModelCXP)
+	For nX := 1 to oModelCXP:Length()
+		oModelCXP:GoLine(nX)
+		If !oModelCXP:IsDeleted() .And. !Empty(oModelCXP:GetValue("CXP_PERC"))
+			If nX != nLine
+				nPerc += oModelCXP:GetValue("CXP_PERC")
+			EndIf
+			lRat := .T.
+	  	EndIf
+	Next nX
+	
+	If lRat .And. ((lVldLine .And. nPerc > 100) .Or. (!lVldLine .And. nPerc <> 100))
+		Help(" ",1,"CNMNATEPER") //-- A somatória dos percentuais das entidades contábeis das múltiplas naturezas diferem de 100%.
+		lRet := .F.
+	EndIf
+EndIf
+
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return lRet
+
+
+//******************************************************************************************************************************
+//********************************************************** GATILHOS **********************************************************
+//******************************************************************************************************************************
+//==============================================================================================================================
+/*/{Protheus.doc} CnGatMNat()
+Função responsável por validar a execução de gatilhos de multipla natureza
+@author Israel.Escorizza 
+@since 07/02/2017 / 
+@return lRet
+/*/
+//==============================================================================================================================
+Function CnGatMNat(lModel)
+Local   lRet 	:= .F.
+Default lModel := .F.
+lRet := !IsInCallStack('CNTA120') .And. AliasInDic('CXO') .And. ((SuperGetMv('MV_MULNATP',.F.,.F.) .And. Cn300RetSt("COMPRA",0,,,,lModel)) .Or. (SuperGetMv('MV_MULNATR',.F.,.F.) .And. !Cn300RetSt("COMPRA",0,,,,lModel)))
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnVlMNat()
+Função responsável por realizar o calculo do valor da multipla natureza
+@Param	nOper	0	-	Atualiza todos campos da multipla natureza 	(Atualização de Valor da planilha)
+				1	-	Atualiza o valor total da multipla natureza (Atualização de percentual da natureza)
+				2	-	Atualiza o percentual da multipla natureza 	(Atualização do valor total da natureza)
+@author Israel.Escorizza
+@since 07/02/2017
+@return nRet
+/*/
+//==============================================================================================================================
+Function CnVlMNat(nOper)
+Local aArea			:= {}
+Local aSaveLines	:= {}
+Local aValores		:= {}
+Local oView			:= Nil
+Local oModel 		:= Nil
+Local oModelCXO		:= Nil
+Local nVlrPlan		:= 0
+Local nRet 			:= 0
+Local nX			:= 0
+Local lMultNatP		:= SuperGetMv( "MV_MULNATP", .F., .F. )
+Local lMultNatR		:= SuperGetMv( "MV_MULNATR", .F., .F. )
+Local lCompra 		:= CN300RetSt( "COMPRA",,,,, .F. ) 
+
+Default nOper 		:= 0
+
+If ( lCompra .And. lMultNatP ) .Or. ( !lCompra .And. lMultNatR )
+	aArea := GetArea()
+	aSaveLines := FWSaveRows()
+
+	oModel := FwModelActive()
+	oModelCXO := oModel:GetModel('CXODETAIL')
+	
+	aValores := CnVlrTit( oModel )
+	nVlrPlan := aValores[1]
+	
+	DO CASE
+		CASE nOper == 0
+		
+			For nX := 1 To oModelCXO:Length()
+				oModelCXO:GoLine(nX)
+				If oModelCXO:GetValue('CXO_PERC') > 0
+					oModelCXO:SetValue('CXO_VALOR',nVlrPlan * oModelCXO:GetValue('CXO_PERC') / 100 )
+				EndIf
+			Next nX
+			
+			If !IsBlind()
+				oView := FwViewActive()
+				If oView != Nil .And. oView:IsActive() .and. oView:GetDescription() == STR0001
+					oView:Refresh('CXODETAIL')
+				EndIf
+			EndIf
+			oModelCXO:GoLine(1)
+			nRet := aValores[2]
+		CASE nOper == 1
+			nRet :=  nVlrPlan * oModelCXO:GetValue('CXO_PERC') / 100
+		CASE nOper == 2
+			nRet := oModelCXO:GetValue('CXO_VALOR') / nVlrPlan * 100
+	END DO
+	
+	FWRestRows(aSaveLines)
+	RestArea(aArea)
+EndIf
+
+
+Return nRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnVlrTit( oModel )
+Função responsável por realizar o calculo do valor total do título referente a planilha
+
+@Param	oModel	modelo do contrato (CNTA300) ou medicao (CNTA121)
+@author jose.delmondes
+@since 15/02/2017
+@return nValor
+/*/
+//==============================================================================================================================
+Function CnVlrTit( oModel )
+
+Local nValor	:= 0
+Local nVlrCpo	:= 0
+Local nX	:= 0
+
+Local cModelId	:= oModel:GetId()
+Local cCampo	:= ReadVar()
+
+Local oModelCNA	:= Nil
+Local oModelCNB	:= Nil
+Local oModelCNE	:= NIl
+
+
+DO 	CASE
+	CASE cModelId == 'CNTA300'
+		
+		oModelCNA	:= oModel:GetModel( 'CNADETAIL' )
+		oModelCNB	:= oModel:GetModel( 'CNBDETAIL' ) 
+		
+		If Cn300RetSt('FIXO')		
+			For nX	:= 1 To oModelCNB:Length( )
+				oModelCNB:GoLine( nX )
+				
+				If !oModelCNB:IsDeleted( ) .And. oModelCNB:GetValue( 'CNB_PEDTIT' ) == '2'
+					nValor += oModelCNB:GetValue( 'CNB_VLTOT' )
+				EndIf
+			Next nX
+		Else
+			nValor	:= oModelCNA:GetValue( 'CNA_VLTOT' )
+		EndIf
+		
+		DO CASE
+			CASE 'CNA_VLTOT' $ cCampo 
+		 		nVlrCpo := oModelCNA:GetValue( 'CNA_VLTOT' )
+		 	CASE 'CNB_VLTOT' $ cCampo
+		 		nVlrCpo := oModelCNB:GetValue( 'CNB_VLTOT' )
+		 	CASE 'CNB_PEDTIT' $ cCampo  
+		 		nVlrCpo := oModelCNB:GetValue( 'CNB_PEDTIT' )
+		END DO
+		
+	
+	CASE cModelId == 'CNTA121'
+		
+		oModelCNE := oModel:GetModel( 'CNEDETAIL' ) 
+				
+		For nX	:= 1 To oModelCNE:Length( )
+			oModelCNE:GoLine(nX)
+			
+			If !oModelCNE:IsDeleted( ) .And. oModelCNE:GetValue( 'CNE_PEDTIT' ) == '2'
+				nValor += oModelCNE:GetValue( 'CNE_VLTOT' )
+			EndIf
+		Next nX
+		
+		DO CASE
+			CASE 'CNE_VLTOT' $ cCampo 
+		 		nVlrCpo := oModelCNE:GetValue( 'CNE_VLTOT' )
+		 	CASE 'CNE_PEDTIT' $ cCampo  
+		 		nVlrCpo := oModelCNE:GetValue( 'CNE_PEDTIT' )
+		END DO
+END DO
+
+Return { nValor , nVlrCpo }
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnVlMNCC()
+Função responsável por realizar o calculo do valor da entidade contábil da multipla natureza
+@Param	nOper	0	-	Atualiza todos campos das entidades contábeis da multipla natureza (Atualização de Valor da natureza)
+				1	-	Atualiza o valor total da entidade contábil (Atualização de percentual da entidade)
+				2	-	Atualiza o percentual da entidade contábil 	(Atualização do valor entidade contábil)
+@author Israel.Escorizza
+@since 07/02/2017
+@return nRet
+/*/
+//==============================================================================================================================
+Function CnVlMNCC(nOper)
+Local aSaveLines	:= FWSaveRows()
+
+Local oView			:= Nil
+Local oModel 		:= FwModelActive()
+Local oModelCXP		:= oModel:GetModel('CXPDETAIL')
+Local nVlrNat		:= oModel:GetValue('CXODETAIL','CXO_VALOR') 
+Local nRet 			:= 0
+Local nX			:= 0
+
+Default nOper 		:= 0
+
+DO CASE
+	CASE nOper == 0
+		For nX := 1 To oModelCXP:Length()
+			oModelCXP:GoLine(nX)
+			oModelCXP:SetValue('CXP_VALOR',nVlrNat * oModelCXP:GetValue('CXP_PERC') / 100 )
+		Next nX
+		
+		If !IsBlind()
+			oView := FwViewActive()
+			If oView:IsActive()
+				oView:Refresh('CXPDETAIL')
+			EndIf
+		EndIf
+		oModelCXP:GoLine(1)
+		nRet := nVlrNat
+	CASE nOper == 1
+		nRet :=  nVlrNat * oModelCXP:GetValue('CXP_PERC') / 100
+	CASE nOper == 2
+		nRet := oModelCXP:GetValue('CXP_VALOR') / nVlrNat * 100
+END DO
+
+FWRestRows(aSaveLines)
+Return nRet
+
+//******************************************************************************************************************************
+//********************************************************** Revisões **********************************************************
+//******************************************************************************************************************************
+//==============================================================================================================================
+/*/{Protheus.doc} CnRevMNat()
+Função responsável por liberar a edição dos campos das multiplas naturezas na revisão de contrato.
+@author Israel.Escorizza 
+@since 08/02/2017 / 
+@return
+/*/
+//==============================================================================================================================
+Function CnRevMNat(oModel)
+Local aArea			:= GetArea()
+Local aSaveLines	:= FWSaveRows()
+
+Local aCampos 		:= {}
+Local aCTBEnt		:= {}
+
+Local oStruCXO		:= Nil
+Local oStruCXP		:= Nil
+
+Local lMultNat		:= CnGatMNat()
+Local lAuto 		:= .F.
+
+Local cTipRev		:= A300GTpRev()
+Local cLibRev		:= DEF_REV_ADITI+'|'+DEF_REV_REAJU+'|'+DEF_REV_REALI+'|'+DEF_REV_READE+'|'+DEF_REV_RENOV+'|'+DEF_REV_ABERT
+
+Local nX			:= 0
+
+Default oModel := FwModelActive()
+
+If !Empty(oModel) .And. lMultNat .And. cTipRev $ cLibRev
+	aCTBEnt	:= CTBEntArr()
+	oStruCXO:= oModel:GetModel('CXODETAIL'):GetStruct()
+	oStruCXP:= oModel:GetModel('CXPDETAIL'):GetStruct()
+	lAuto 	:= oModel:GetValue("CN9MASTER","CN9_AUTO") == '1'
+	
+	If lAuto
+		aAdd(aCampos,{'CXODETAIL',{'CXO_ITEM'}})
+		aAdd(aCampos,{'CXPDETAIL',{'CXP_ITEM'}})
+	EndIf
+	
+	aAdd(aCampos,{'CXODETAIL',{'CXO_NATURE','CXO_PERC','CXO_VALOR'}})
+	aAdd(aCampos,{'CXPDETAIL',{'CXP_CC','CXP_CONTA','CXP_ITEMCT','CXP_CLVL','CXP_PERC','CXP_VALOR'}})
+	
+	For nX := 1 To Len(aCTBEnt)	
+		Do Case		
+		Case CXP->(FieldPos("CXP_EC" + aCTBEnt[nX] + "CR")) > 0
+			aAdd(aCampos,{'CXPDETAIL', {"CXP_EC" +aCTBEnt[nX] +"CR"}})
+		Case CXP->(FieldPos("CXP_EC" + aCTBEnt[nX] + "DB")) > 0
+			aAdd(aCampos,{'CXPDETAIL', {"CXP_EC" +aCTBEnt[nX] +"DB"}})
+		End Do				
+	Next nX
+	
+	MtBCMod(oModel,aCampos,{||.T.},'2')
+	
+EndIf
+
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return
+
+//******************************************************************************************************************************
+//********************************************************** Medição ***********************************************************
+//******************************************************************************************************************************
+//==============================================================================================================================
+/*/{Protheus.doc} CnCrgMNat(oModel)
+Funcao responsavel por realizar o a carga do rateio de multiplas naturezas do contrato para a medicao
+
+@Param		oModel	Modelo principal da rotina onde sera realizada a carga
+@author 	jose.delmondes
+@since 		08/02/2018
+@return 	nao possui
+/*/
+//==============================================================================================================================
+Function CnCrgMNat( oModel )
+Local aSaveLines	:= FwSaveRows( )
+Local aArea		:= GetArea( )
+Local aAreaCXO	:= { }
+Local aAreaCXP	:= { }
+Local aCamposCXO	:= { }
+Local aCamposCXP	:= { }
+Local aPropCXO	:= { }
+Local aPropCXP	:= { }
+
+Local cContra	:= ' '
+Local cRev		:= ' '
+Local cFilCtr	:= ' '
+Local cPlan	:= ' '
+Local cSeekCXO	:= ' '
+Local cSeekCXP	:= ' '
+Local cNoCpoCXO	:= 'CXO_FILIAL|CXO_CONTRA|CXO_NUMMED|CXO_REVISA|CXO_NUMPLA|CXO_VALOR|'				//-- Campos que nao serao carregados do contrato
+Local cNoCpoCXP	:= 'CXP_FILIAL|CXP_CONTRA|CXP_NUMMED|CXP_REVISA|CXP_NUMPLA|CXP_ITMNAT|CXP_VALOR|'	//-- Campos que nao serao carregados do contrato
+
+Local nX	:= 0
+
+Local oModelCND	:= oModel:GetModel( 'CNDMASTER' )	//-- Medicao
+Local oModelCXN	:= oModel:GetModel( 'CXNDETAIL' )	//-- Planilha
+Local oModelCXO	:= oModel:GetModel( 'CXODETAIL' )	//-- Multiplas Naturezas
+Local oModelCXP	:= oModel:GetModel( 'CXPDETAIL' )	//-- Distribuicao Contabil das Naturezas
+
+aCamposCXO	:= oModelCXO:Getstruct():aFields	//-- Carrega estrutura de campos da tabela de multiplas matureazas - CXO 
+aCamposCXP	:= oModelCXP:Getstruct():aFields	//-- Carrega estrutura de campos da tabela de distribuicao contabil das naturezas - CXP
+
+cContra	:= oModelCND:GetValue( 'CND_CONTRA' )	//-- Numero do contrato
+cRev		:= oModelCND:GetValue( 'CND_REVISA' )	//-- Revisao do contrato
+cFilCtr	:= oModelCND:GetValue( 'CND_FILCTR' )	//-- Filial de inclusao do contrato
+cPlan		:= oModelCXN:GetValue( 'CXN_NUMPLA' )	//-- Numero da planilha
+
+aPropCXO	:= GetPropMdl( oModelCXO )	//-- Backup das propriedades insert, delete e update do modelo da tabela CXO
+aPropCXP	:= GetPropMdl( oModelCXP )	//-- Backup das propriedades insert, delete e update do modelo da tabela CXP
+
+CNTA300BlMd( oModelCXO , .F. )	//-- Habilita tabela CXO para edicao
+CNTA300BlMd( oModelCXP , .F. )	//-- Habilita tabela CXP para edicao
+
+dbSelectArea( 'CXO' )
+aAreaCXO := CXO->( GetArea( ) )
+CXO->( dbSetOrder( 1 ) ) //-- CXO_FILIAL + CXO_CONTRA + CXO_NUMMED + CXO_REVISA + CXO_NUMPLA + CXO_ITEM     
+
+dbSelectArea( 'CXP' )
+aAreaCXP := CXP->( GetArea( ) )
+CXP->( dbSetOrder( 1 ) ) //-- CXP_FILIAL + CXP_CONTRA + CXP_NUMMED + CXP_REVISA + CXP_NUMPLA + CXP_ITMNAT + CXP_ITEM                                                                                                              
+
+cSeekCXO :=  xFilial( 'CXO', cFilCtr ) + cContra + Space(TamSx3('CXO_NUMMED')[1]) + cRev + cPlan	//-- Chave de busca para tabela CXO
+
+If CXO->( dbSeek( cSeekCXO ) )	//-- Pociciona tabela CXO com a chave de busca
+	
+	//-------------------------------------------------------------------
+	// Importa multiplas naturezas do contrato
+	//-------------------------------------------------------------------
+	While !CXO->( EOF ( ) ) .And. ( CXO->( CXO_FILIAL + CXO_CONTRA + CXO_NUMMED + CXO_REVISA + CXO_NUMPLA ) ==  cSeekCXO )
+		
+		//-------------------------------------------------------------------
+		// A primeira linha do modelo nao precisa ser adicionada
+		//-------------------------------------------------------------------
+		If !( oModelCXO:GetLine() == 1 .And. Empty( oModelCXO:GetValue( 'CXO_NATURE' ) ) )
+			oModelCXO:AddLine()
+		EndIf
+		
+		//------------------------------------------------------------------------
+		// Importacao de campos da tabela CXO do contrato para o modelo da medicao
+		//------------------------------------------------------------------------
+		For nX := 1 To Len( aCamposCXO )
+			
+			If !( aCamposCXO[nX][3] + '|' $ cNoCpoCXO )	//-- Valida se o campo deve ser importado
+				oModelCXO:SetValue( aCamposCXO[nX][3] , CXO->&(aCamposCXO[nX][3]) )
+			EndIf
+			
+		Next nX
+		
+		cSeekCXP := xFilial( 'CXP', cFilCtr ) + cContra + Space(TamSx3('CXP_NUMMED')[1]) + cRev + cPlan + CXO->CXO_ITEM	//-- Chave de Busca para a tabela CXP
+		
+		If CXP->( dbSeek( cSeekCXP ) )	//-- Pociciona tabela CXP com a chave de busca
+			
+			//-------------------------------------------------------------------
+			// Importa distribuicao contabil da natureza
+			//-------------------------------------------------------------------
+			While !CXP->( EOF ( ) ) .And. ( CXP->( CXP_FILIAL + CXP_CONTRA + CXP_NUMMED + CXP_REVISA + CXP_NUMPLA + CXP_ITMNAT ) ==  cSeekCXP )
+				
+				//-------------------------------------------------------------------
+				// A primeira linha do modelo nao precisa ser adicionada
+				//-------------------------------------------------------------------
+				If !( oModelCXP:GetLine() == 1 .And. Empty( oModelCXP:GetValue( 'CXP_PERC' ) ) )
+					oModelCXP:AddLine()
+				EndIf
+				
+				//------------------------------------------------------------------------
+				// Importacao de campos da tabela CXP do contrato para o modelo da medicao
+				//------------------------------------------------------------------------
+				For nX := 1 To Len( aCamposCXP )
+			
+					If !( aCamposCXP[nX][3] + '|' $ cNoCpoCXP )	//-- Valida se o campo deve ser importado
+						oModelCXP:SetValue( aCamposCXP[nX][3] , CXP->&(aCamposCXP[nX][3]) )
+					EndIf
+					
+				Next nX
+			
+				CXP->( dbSkip( ) )
+			End
+				
+		EndIf
+		
+		CXO->( dbSkip( ) )
+	End
+
+EndIf
+
+//-------------------------
+// Restauracao do modelo
+//-------------------------
+RstPropMdl( oModelCXO , aPropCXO )
+RstPropMdl( oModelCXP , aPropCXP )
+FWRestRows( aSaveLines )
+
+//-------------------------
+// Restauracao de areas
+//-------------------------
+RestArea( aAreaCXP )
+RestArea( aAreaCXO )
+RestArea( aArea )
+
+Return
+
+//==============================================================================================================================
+/*/{Protheus.doc} CnGetMNat( oModel , @aCab )
+Funcao responsavel por alimentar o array de titulos com as informacoes de multiplas naturezas
+
+@Param		oModel	Modelo principal da medicao
+			aCab array com as informacoes do titulo
+@author 	jose.delmondes
+@since 		08/02/2018
+@return 	nao possui
+/*/
+//==============================================================================================================================
+Function CnGetMNat( oModel , aCab , cAliasTit )
+
+Local aSaveLines	:= FwSaveRows( )
+Local aArea	:= GetArea( )
+Local aAuxEV	:= { }
+Local aAuxEZ	:= { }
+Local aRatEZ	:= { }
+Local aRatEVEZ	:= { }
+Local aCamposCXO	:= { }
+Local aCamposCXP	:= { }
+
+Local cNoCpoCXO	:= 'CXO_FILIAL|CXO_CONTRA|CXO_NUMMED|CXO_REVISA|CXO_NUMPLA|CXO_ITEM|'				//-- Campos que nao serao enviados para o titulo
+Local cNoCpoCXP	:= 'CXP_FILIAL|CXP_CONTRA|CXP_NUMMED|CXP_REVISA|CXP_NUMPLA|CXP_ITMNAT|CXP_ITEM|'	//-- Campos que nao serao enviados para o titulo
+
+Local oModelCXO	:= oModel:GetModel( 'CXODETAIL' )	//-- Multiplas Naturezas
+Local oModelCXP	:= oModel:GetModel( 'CXPDETAIL' )	//-- Distribuicao Contabil das Naturezas
+
+Local nW	:= 0
+Local nX	:= 0
+Local nY	:= 0
+Local nZ	:= 0
+
+aCamposCXO	:= oModelCXO:Getstruct():aFields	//-- Carrega estrutura de campos da tabela de multiplas matureazas - CXO 
+aCamposCXP	:= oModelCXP:Getstruct():aFields	//-- Carrega estrutura de campos da tabela de distribuicao contabil das naturezas - CXP
+
+dbSelectArea( 'SEV' )
+dbSelectArea( 'SEZ' )
+
+If oModelCXO:Length( ) > 0 .And. !oModelCXO:IsDeleted( ) .And. !Empty( oModelCXO:GetValue( 'CXO_NATURE' ) )	//-- Verifica se a planilha possui rateio de multiplas naturezas
+	
+	Aadd( aCab , { cAliasTit + '_MULTNAT' , '1' , Nil } )	//-- indica que ha rateio por multiplas naturezas
+	
+	//-------------------------------------------------------------------
+	// Alimenta array de multiplas naturezas - SEV
+	//-------------------------------------------------------------------
+	For nX := 1 To oModelCXO:Length()
+		
+		oModelCXO:GoLine( nX )
+		
+		aAuxEV	:= {}
+		
+		//-------------------------------------------------------------------
+		// Percorre estrutura da tabela CXO
+		//-------------------------------------------------------------------
+		For nY := 1 To Len( aCamposCXO )
+			
+			If !( aCamposCXO[nY][3] + '|' $ cNoCpoCXO )	//-- Valida se o campo deve ser importado
+				
+				If aCamposCXO[nY][3] == 'CXO_NATURE'
+					
+					Aadd( aAuxEV , { 'EV_NATUREZ' , oModelCXO:GetValue( aCamposCXO[nY][3] ) , Nil } )
+				
+				ElseIf SEV->( FieldPos( 'EV' + SubStr( aCamposCXO[nY][3] , 4 ) ) ) > 0
+					
+					Aadd( aAuxEV , { 'EV' + SubStr( aCamposCXO[nY][3] , 4 ) , oModelCXO:GetValue( aCamposCXO[nY][3] ) , Nil } )
+				
+				EndIf
+
+			EndIf
+			
+		Next nY
+		
+		If oModelCXP:Length( ) > 0 .And. !oModelCXP:IsDeleted( ) .And. !Empty( oModelCXP:GetValue( 'CXP_PERC' ) ) 	//-- Verifica se existe distribuicao contabil
+		
+			Aadd( aAuxEV , { 	'EV_RATEICC' , '1' , Nil } )	//-- indica que ha rateio por centro de custo
+			
+			aRatEZ	:= { }
+			
+			//-------------------------------------------------------------------
+			// Alimenta array da distribuicao contabil das naturezas - SEZ
+			//-------------------------------------------------------------------
+			For nZ := 1 To oModelCXP:Length()
+				
+				oModelCXP:GoLine( nZ )
+				
+				aAuxEZ := {}
+				
+				//-------------------------------------------------------------------
+				// Percorre estrutura da tabela CXP
+				//-------------------------------------------------------------------
+				For nW := 1 To Len( aCamposCXP )
+		
+					If !( aCamposCXP[nW][3] + '|' $ cNoCpoCXP )	//-- Valida se o campo deve ser importado
+						
+						If aCamposCXP[nW][3] == 'CXP_CC'
+							
+							Aadd( aAuxEZ , { 'EZ_CCUSTO' , oModelCXP:GetValue( aCamposCXP[nW][3] ) , Nil } )
+						
+						ElseIf aCamposCXP[nW][3] == 'CXP_ITEMCT'
+							
+							Aadd( aAuxEZ , { 'EZ_ITEMCTA' , oModelCXP:GetValue( aCamposCXP[nW][3] )  , Nil } )
+						
+						ElseIf SEZ->( FieldPos( 'EZ' + SubStr( aCamposCXP[nW][3] , 4 ) ) ) > 0
+							
+							Aadd( aAuxEZ , { 'EZ' + SubStr( aCamposCXP[nW][3] , 4 ) , oModelCXP:GetValue( aCamposCXP[nW][3] )  , Nil } )
+						
+						EndIf
+		
+					EndIf
+					
+				Next nW
+				
+				Aadd( aRatEZ , aAuxEZ )	//-- Adiciona configuracao contabil ao array de distribuicao contabil da natureza
+
+			Next nZ
+			
+			Aadd( aAuxEv , { 'AUTRATEICC' , aRatEZ , Nil } )	//-- adiciona ao array da natureza os multiplos centros de custo
+			
+		EndIf
+		
+		Aadd( aRatEVEZ , aAuxEV )	//-- Adiciona configuracao da natureza ao array de multiplas naturezas
+	
+	Next nX
+	
+	Aadd( aCab , { 'AUTRATEEV' , aRatEVEZ , Nil } )	//-- adiciona ao array do titulo o array de multiplas naturezas
+	
+EndIf
+
+//-------------------------
+// Restauracao do modelo
+//-------------------------
+FWRestRows( aSaveLines )
+
+//-------------------------
+// Restauracao de area
+//-------------------------
+RestArea( aArea )
+
+Return
+
+//==============================================================================================================================
+/*/{Protheus.doc} VldCpoCNM
+Funcao que verifica se possui os campos com as informacoes de multiplas naturezas
+
+@Param	
+@author 	janaina.jesus
+@since 		09/07/2018
+@return 	
+/*/
+//==============================================================================================================================
+Function VldCpoCNM()
+Local aCTBEnt    := CTBEntArr()
+Local nX         := 0
+Local lRet       := .T.
+Local aArea      := GetArea()
+
+dbSelectArea( 'CXO' )
+CXO->( dbSetOrder( 1 ) ) //-- CXO_FILIAL + CXO_CONTRA + CXO_NUMMED + CXO_REVISA + CXO_NUMPLA + CXO_ITEM     
+
+dbSelectArea( 'CXP' )
+CXP->( dbSetOrder( 1 ) ) //-- CXP_FILIAL + CXP_CONTRA + CXP_NUMMED + CXP_REVISA + CXP_NUMPLA + CXP_ITMNAT + CXP_ITEM    
+
+For nX := 1 To Len(aCTBEnt)		
+	If !CXP->(FieldPos("CXP_EC" + aCTBEnt[nX] + "CR")) > 0 .Or. !CXP->(FieldPos("CXP_EC" + aCTBEnt[nX] + "DB")) > 0	
+		lRet:= .F.
+		Exit
+	EndIf	
+Next nX
+
+RestArea(aArea)
+Return lRet
+
+//==============================================================================================================================
+/*/{Protheus.doc} MNatVlItT()
+Função responsável pela pós validação do modelo CXP
+@Param	
+@author Israel.Escorizza 
+@since 	08/02/2017 
+@return lRet
+/*/
+//==============================================================================================================================
+Function MNatVlItT()
+Local aArea		:= GetArea()
+Local aSaveLines:= FWSaveRows()
+
+Local oModel	:= FwModelActive()
+Local oModelCNB := oModel:GetModel('CNBDETAIL')
+
+Local nX		:= 1
+
+Local lRet 		:= .F.
+
+While !lRet .And. nX <= oModelCNB:Length()
+	oModelCNB:GoLine(nX)
+	lRet := !oModelCNB:IsDeleted() .And. oModelCNB:GetValue('CNB_PEDTIT') == "2" 
+	nX++
+EndDo
+	
+FWRestRows(aSaveLines)
+RestArea(aArea)
+Return lRet

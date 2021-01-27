@@ -1,0 +1,178 @@
+#IFDEF WINDOWS
+	#Include "Fivewin.ch"
+#ENDIF
+#INCLUDE "CFGX038.CH"
+
+Function RetIdent()
+Local xIdent ,nPosIdent
+nPosIdent := Ascan(aHeader,{|x| "X9_IDENT" $ X[2]})
+
+If Len(aCols) == 1
+	xIdent := "01"
+Else
+	xIdent := aCols[Len(aCols)-1,nPosIdent]
+	xIdent := StrZero(Val(xIdent)+1,2,0)
+Endif
+Return xIdent
+
+Function C038LinOk()
+Return .T.
+
+Function C038TudOk()
+Return .T.
+
+
+Function OpenSx9()
+return OpenSxs(,,,,,, "SX9" )
+
+Function Valsx2(cArq)
+Local cAlias := Alias(),nOrder:=IndexOrd()
+Local lRet := .T.
+
+IF cArq == Nil
+	cArq := &(ReadVar())
+Endif
+
+DbSelectarea("SX2")
+DbSeek(cArq)
+If !Found()
+	lRet := .F.
+Endif 
+dbSelectArea(cAlias)
+dbSetOrder(nOrder)
+Return lret
+
+
+//ฺฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฟ
+//ณ Funcoes do FORPRINT adaptadas para verificar sintaxe         ณ
+//ภฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤฤู
+
+Function Ano(dData)
+Return YEAR(dData)
+	 
+/*
+ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+ฑฑษออออออออออัออออออออออหอออออออัออออออออออออออออออออหออออออัอออออออออออออปฑฑ
+ฑฑบPrograma  ณMsAscII   บAutor  ณMicrosiga           บ Data ณ  22/06/06   บฑฑ
+ฑฑฬออออออออออุออออออออออสอออออออฯออออออออออออออออออออสออออออฯอออออออออออออนฑฑ
+ฑฑบDesc.     ณFuncao de compatibilizacao com o comando ASC (clipper)      บฑฑ
+ฑฑฬออออออออออุออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบUso       ณSomente ADVPL                                               บฑฑ
+ฑฑฬออออออออออุอออออออออออออออัออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบAnalista  ณ Data/Bops/Ver ณManutencao Efetuada                         บฑฑ
+ฑฑฬออออออออออุอออออออออออออออฯออออออออออออออออออออออออออออออออออออออออออออนฑฑ
+ฑฑบMarcelo K.ณ26/06/06ณ8.11  ณ-Bops 101068: Alteracao do nome da funcao deบฑฑ
+ฑฑบ          ณ        ณ      ณASCII para MsAscII.                         บฑฑ
+ฑฑบ          ณ        ณ      ณsolicitado pela Tecnologia para             บฑฑ
+ฑฑบ          ณ        ณ      ณcompatibilizar o Kernel do Protheus         บฑฑ
+ฑฑศออออออออออฯออออออออฯออออออฯออออออออออออออออออออออออออออออออออออออออออออผฑฑ
+ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+*/
+Function MsAscII(cChar)
+Return ASC(Substr(cChar,1,1))
+
+Function BOOL_TEXTO(cExpr)
+If &cExpr
+	Return "Verdadeiro"
+Else
+	Return "Falso"
+Endif
+
+Function Char(nChar)
+Return Chr(nChar)
+
+Function Data_Hoje()
+Return MsDate()
+
+Function Data_texto(dData)
+Return DTOC(dData)
+
+Function DDMMAAA_DATA(cData)
+Return Ctod("  /  /  ")
+
+Function Dia_da_semana(dData)
+Return Dow(dDate)
+
+Function Dia_do_ano(dDate) 
+Return 1
+
+Function Dia_do_mes(dDate)
+Return DAY(dDate)
+
+Function Floor(nNum)
+Return Round(nNum,0)
+
+Function HHHMMSS_TEMPO(cHora)
+Return Time()
+
+Function HHHMMSS_HORA(cHora)
+REturn Time()
+
+Function Hora(hHora)
+Return 1
+
+Function Hora_texto(hHora)
+Return Time()
+
+Function Hora_Atual()
+Return Time()
+
+Function Insert(cText,nDelNum,nPosIni,cText2)
+Return Stuff(cText,nPosIni,nDelNum,cText2)
+
+//Function Invalido()
+//REturn 
+
+Function LCase(cText)
+Return Lower(cText)
+
+Function Length(ctext)
+Return Len(lTrim(cText))
+
+Function Locate(cSearch,cTarget,nPosIni)
+Local nCount:= 0,nPos
+While nCount < nPosIni
+	nPos:= At(cSearch,cTarget)
+	cTarget := Substr(cTarget,nPos+1)
+	nCount += nPos
+Enddo
+Return nCount
+
+Function Minuto()
+Return 1
+
+Function Num_Texto(nNum)
+Return Str(nNum)
+
+Function Quartil(dDate)
+REturn 1
+
+Function Replace(cString,cSearch,cReplace)
+return Strtran(cString,cSearch,cReplace)
+
+Function Segundo(hHora)
+return 1
+
+Function Semana(dDate)
+Return 1
+
+Function Substring(cText,nPos1,nPos2)
+Return Substr(cText,nPos1,nPos2)
+
+Function Texto_Num(cTexto)
+Return Val(cTexto)
+
+Function UpCase(cTexto)
+Return Upper(cTexto)
+
+
+Static FUnction AchaSX9(cDominio)
+SX9->(dbSetOrder(1))
+Return (SX9->(dbSeek(cDominio)))
+
+
+
+
+
